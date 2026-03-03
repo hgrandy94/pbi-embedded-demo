@@ -9,7 +9,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if (!reportContainer) return;
 
-  // Initialise the Power BI JS client
+  // ── Helper to display an error on the page ──────────────────────────────
+  function showError(message) {
+    if (loadingSpinner) loadingSpinner.classList.add("d-none");
+    reportContainer.style.display = "none";
+    errorContainer.classList.remove("d-none");
+    errorContainer.innerHTML =
+      "<strong>Error:</strong> " + message.replace(/\n/g, "<br>");
+  }
+
+  // ── Verify the Power BI JS SDK loaded ───────────────────────────────────
+  if (!window.powerbi || !window["powerbi-client"]) {
+    showError(
+      "The Power BI JavaScript SDK failed to load. " +
+      "Check your network connection or browser console for details."
+    );
+    return;
+  }
+
   const powerbiClient = window.powerbi;
   const models        = window["powerbi-client"].models;
 
@@ -60,11 +77,6 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     })
     .catch(function (err) {
-      // Hide spinner and report; show error message
-      if (loadingSpinner) loadingSpinner.classList.add("d-none");
-      reportContainer.style.display = "none";
-      errorContainer.classList.remove("d-none");
-      errorContainer.innerHTML =
-        "<strong>Error:</strong> " + err.message.replace(/\n/g, "<br>");
+      showError(err.message);
     });
 });

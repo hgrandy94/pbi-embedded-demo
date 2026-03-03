@@ -2,7 +2,7 @@
 
 import json
 
-from flask import Blueprint, render_template
+from flask import Blueprint, Response, render_template
 from flask_login import login_required
 
 from app.services.pbi_embed_service import PbiEmbedService
@@ -33,13 +33,21 @@ def get_embed_info():
 
     config_result = Utils.check_config(current_app)
     if config_result is not None:
-        return json.dumps({"errorMsg": config_result}), 500
+        return Response(
+            json.dumps({"errorMsg": config_result}),
+            status=500,
+            mimetype="application/json",
+        )
 
     try:
         embed_info = PbiEmbedService().get_embed_params_for_single_report(
             current_app.config["WORKSPACE_ID"],
             current_app.config["REPORT_ID"],
         )
-        return embed_info
+        return Response(embed_info, status=200, mimetype="application/json")
     except Exception as ex:
-        return json.dumps({"errorMsg": str(ex)}), 500
+        return Response(
+            json.dumps({"errorMsg": str(ex)}),
+            status=500,
+            mimetype="application/json",
+        )
