@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Home – Power BI Embedded Demo{% endblock %}
+
+{% block content %}
+<div class="row mt-4">
+  <div class="col-lg-8">
+    <h1 class="mb-3">Welcome to the Power BI Embedded Demo</h1>
+    <p class="lead">
+      This application demonstrates how to embed Power BI reports into a
+      Python Flask web application using the
+      <strong>App Owns Data</strong> (embed for your customers) pattern.
+    </p>
+
+    <hr>
+
+    <div class="row g-4 mt-2">
+      <!-- Reports card -->
+      <div class="col-md-6">
+        <div class="card h-100 border-primary shadow-sm">
+          <div class="card-body text-center">
+            <i class="bi bi-file-earmark-bar-graph text-primary" style="font-size: 3rem;"></i>
+            <h5 class="card-title mt-3">Reports</h5>
+            <p class="card-text">
+              View your Power BI report embedded directly in the browser.
+            </p>
+            <a href="{{ url_for('views.reports') }}" class="btn btn-outline-primary">
+              <i class="bi bi-arrow-right-circle me-1"></i>Open Reports
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info card -->
+      <div class="col-md-6">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body text-center">
+            <i class="bi bi-info-circle text-secondary" style="font-size: 3rem;"></i>
+            <h5 class="card-title mt-3">How It Works</h5>
+            <p class="card-text">
+              The app authenticates via <strong>Microsoft Entra ID</strong>
+              (Azure AD) and requests an embed token from the Power BI REST API.
+            </p>
+            <a
+              href="https://learn.microsoft.com/en-us/power-bi/developer/embedded/embed-sample-for-customers?tabs=python"
+              target="_blank"
+              rel="noopener"
+              class="btn btn-outline-secondary"
+            >
+              <i class="bi bi-book me-1"></i>Read the Docs
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick-start sidebar -->
+  <div class="col-lg-4 mt-4 mt-lg-0">
+    <div class="card bg-light shadow-sm">
+      <div class="card-header fw-bold"><i class="bi bi-gear me-1"></i>Quick Start</div>
+      <div class="card-body">
+        <ol class="mb-0">
+          <li>Register an app in <strong>Microsoft Entra ID</strong></li>
+          <li>Gather <code>--tenant-id</code>, <code>--client-id</code>, <code>--client-secret</code></li>
+          <li>Get <code>--workspace-id</code> and <code>--report-id</code> from Power BI</li>
+          <li>Run <code>uv run python main.py --tenant-id=… --client-id=… --client-secret=… --workspace-id=… --report-id=…</code></li>
+          <li>Open <a href="http://localhost:5000">http://localhost:5000</a></li>
+        </ol>
+        <p class="mt-2 mb-0"><small>Run <code>uv run python main.py --help</code> for all options.</small></p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

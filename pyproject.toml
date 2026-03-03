@@ -1,7 +1,16 @@
 [project]
 name = "pbi-embedded-demo"
 version = "0.1.0"
-description = "Add your description here"
+description = "Power BI Embedded demo using Flask - App Owns Data pattern"
 readme = "README.md"
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "click>=8.1",
+    "flask>=3.1",
+    "flask-login>=0.6",
+    "msal>=1.31",
+    "requests>=2.32",
+]
+
+[project.scripts]
+pbi-demo = "main:main"

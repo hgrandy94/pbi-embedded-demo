@@ -1,0 +1,45 @@
+/* ── Power BI Embedded Demo – Custom Styles ───────────────────────────── */
+
+body {
+  background-color: #f4f6f9;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+/* Navbar */
+.navbar-brand {
+  letter-spacing: 0.5px;
+}
+
+/* Report container – 16 : 9 aspect ratio with a minimum height */
+#report-container {
+  width: 100%;
+  min-height: 600px;
+  height: calc(0.5625 * 80vw);   /* 16 : 9 */
+  max-height: 85vh;
+}
+
+@media (max-width: 768px) {
+  #report-container {
+    height: calc(0.5625 * 100vw);
+    min-height: 400px;
+  }
+}
+
+/* Remove default iframe border inside report container */
+#report-container iframe {
+  border: none;
+}
+
+/* Cards on the home page */
+.card {
+  transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Footer */
+footer {
+  font-size: 0.85rem;
+}
