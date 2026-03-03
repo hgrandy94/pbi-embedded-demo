@@ -1,21 +1,230 @@
-/* ── Power BI Embedded Demo – Custom Styles ───────────────────────────── */
+/* ── Contoso Health – Design System ────────────────────────────────────── */
 
+:root {
+  --ch-navy:       #1B3A5C;
+  --ch-navy-dark:  #142D48;
+  --ch-teal:       #0097A7;
+  --ch-teal-light: #B2EBF2;
+  --ch-accent:     #00BCD4;
+  --ch-bg:         #F0F4F8;
+  --ch-white:      #FFFFFF;
+  --ch-text:       #2C3E50;
+  --ch-muted:      #7B8D9E;
+  --ch-border:     #DCE3EB;
+  --ch-sidebar-w:  240px;
+  --ch-topbar-h:   56px;
+}
+
+/* ── Global ───────────────────────────────────────────────────────────── */
 body {
-  background-color: #f4f6f9;
+  background-color: var(--ch-bg);
   font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  color: var(--ch-text);
+  margin: 0;
 }
 
-/* Navbar */
-.navbar-brand {
-  letter-spacing: 0.5px;
+a { color: var(--ch-teal); }
+a:hover { color: var(--ch-navy); }
+
+/* ── Top Navbar ───────────────────────────────────────────────────────── */
+.ch-topbar {
+  height: var(--ch-topbar-h);
+  background: var(--ch-navy);
+  color: var(--ch-white);
+  display: flex;
+  align-items: center;
+  padding: 0 1.25rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1040;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-/* Report container – 16 : 9 aspect ratio with a minimum height */
+.ch-topbar .ch-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--ch-white);
+  text-decoration: none;
+}
+
+.ch-topbar .ch-brand .ch-logo-icon {
+  font-size: 1.5rem;
+  color: var(--ch-teal-light);
+}
+
+.ch-topbar .ch-user-area {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.ch-topbar .ch-user-area a {
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: color 0.15s;
+}
+
+.ch-topbar .ch-user-area a:hover {
+  color: var(--ch-white);
+}
+
+/* ── Sidebar ──────────────────────────────────────────────────────────── */
+.ch-sidebar {
+  position: fixed;
+  top: var(--ch-topbar-h);
+  left: 0;
+  bottom: 0;
+  width: var(--ch-sidebar-w);
+  background: var(--ch-white);
+  border-right: 1px solid var(--ch-border);
+  padding-top: 1rem;
+  overflow-y: auto;
+  z-index: 1030;
+  transition: transform 0.25s ease;
+}
+
+.ch-sidebar .nav-section-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ch-muted);
+  padding: 0.75rem 1.25rem 0.35rem;
+  font-weight: 600;
+}
+
+.ch-sidebar .nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1.25rem;
+  color: var(--ch-text);
+  font-size: 0.9rem;
+  border-radius: 0;
+  transition: background 0.15s, color 0.15s;
+  border-left: 3px solid transparent;
+}
+
+.ch-sidebar .nav-link:hover {
+  background: var(--ch-bg);
+  color: var(--ch-teal);
+}
+
+.ch-sidebar .nav-link.active {
+  background: linear-gradient(90deg, rgba(0, 151, 167, 0.08), transparent);
+  color: var(--ch-teal);
+  font-weight: 600;
+  border-left-color: var(--ch-teal);
+}
+
+.ch-sidebar .nav-link i {
+  font-size: 1.1rem;
+  width: 1.25rem;
+  text-align: center;
+}
+
+/* ── Mobile sidebar toggle ────────────────────────────────────────────── */
+.ch-sidebar-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: var(--ch-white);
+  font-size: 1.4rem;
+  cursor: pointer;
+  margin-right: 0.75rem;
+}
+
+@media (max-width: 991.98px) {
+  .ch-sidebar-toggle { display: block; }
+
+  .ch-sidebar {
+    transform: translateX(-100%);
+  }
+  .ch-sidebar.show {
+    transform: translateX(0);
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+  }
+
+  .ch-main {
+    margin-left: 0 !important;
+  }
+}
+
+/* ── Main content area ────────────────────────────────────────────────── */
+.ch-main {
+  margin-left: var(--ch-sidebar-w);
+  margin-top: var(--ch-topbar-h);
+  padding: 1.5rem 2rem 2rem;
+  min-height: calc(100vh - var(--ch-topbar-h));
+}
+
+/* ── Flash messages ───────────────────────────────────────────────────── */
+.ch-main .alert {
+  border-radius: 0.5rem;
+}
+
+/* ── Cards ────────────────────────────────────────────────────────────── */
+.ch-card {
+  background: var(--ch-white);
+  border: 1px solid var(--ch-border);
+  border-radius: 0.75rem;
+  transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.ch-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0.5rem 1.25rem rgba(0, 0, 0, 0.08);
+}
+
+.ch-card .ch-card-icon {
+  font-size: 2.5rem;
+  color: var(--ch-teal);
+}
+
+/* ── Stat cards (home page) ───────────────────────────────────────────── */
+.ch-stat-card {
+  background: var(--ch-white);
+  border: 1px solid var(--ch-border);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  text-align: center;
+}
+
+.ch-stat-card .ch-stat-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.ch-stat-card .ch-stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--ch-navy);
+}
+
+.ch-stat-card .ch-stat-label {
+  font-size: 0.8rem;
+  color: var(--ch-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── Report container ─────────────────────────────────────────────────── */
 #report-container {
   width: 100%;
   min-height: 600px;
-  height: calc(0.5625 * 80vw);   /* 16 : 9 */
+  height: calc(100vh - var(--ch-topbar-h) - 140px);
   max-height: 85vh;
+  border-radius: 0.5rem;
+  overflow: hidden;
 }
 
 @media (max-width: 768px) {
@@ -25,21 +234,93 @@ body {
   }
 }
 
-/* Remove default iframe border inside report container */
 #report-container iframe {
   border: none;
 }
 
-/* Cards on the home page */
-.card {
-  transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-}
-.card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.12) !important;
+/* ── Buttons ──────────────────────────────────────────────────────────── */
+.btn-ch-primary {
+  background: var(--ch-teal);
+  color: var(--ch-white);
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  font-weight: 500;
+  transition: background 0.15s;
 }
 
-/* Footer */
-footer {
-  font-size: 0.85rem;
+.btn-ch-primary:hover {
+  background: var(--ch-navy);
+  color: var(--ch-white);
+}
+
+.btn-ch-outline {
+  background: transparent;
+  color: var(--ch-teal);
+  border: 1.5px solid var(--ch-teal);
+  border-radius: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  font-weight: 500;
+  transition: all 0.15s;
+}
+
+.btn-ch-outline:hover {
+  background: var(--ch-teal);
+  color: var(--ch-white);
+}
+
+/* ── Login page ───────────────────────────────────────────────────────── */
+.ch-login-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--ch-navy) 0%, var(--ch-navy-dark) 60%, #0D1F30 100%);
+}
+
+.ch-login-card {
+  background: var(--ch-white);
+  border-radius: 1rem;
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.25);
+  max-width: 420px;
+  width: 100%;
+  padding: 2.5rem 2rem 2rem;
+}
+
+.ch-login-card .ch-login-logo {
+  font-size: 2.75rem;
+  color: var(--ch-teal);
+}
+
+.ch-login-card h3 {
+  color: var(--ch-navy);
+  font-weight: 700;
+}
+
+.ch-login-card .form-control:focus {
+  border-color: var(--ch-teal);
+  box-shadow: 0 0 0 0.2rem rgba(0, 151, 167, 0.2);
+}
+
+/* ── Footer ───────────────────────────────────────────────────────────── */
+.ch-footer {
+  font-size: 0.8rem;
+  color: var(--ch-muted);
+  padding: 1.25rem 0;
+  border-top: 1px solid var(--ch-border);
+  margin-top: 2rem;
+  text-align: center;
+}
+
+/* ── Page headings ────────────────────────────────────────────────────── */
+.ch-page-title {
+  font-weight: 700;
+  color: var(--ch-navy);
+  margin-bottom: 0.25rem;
+}
+
+.ch-page-subtitle {
+  color: var(--ch-muted);
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
 }

@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}About & Help – Contoso Health{% endblock %}
+
+{% block content %}
+<h1 class="ch-page-title">About &amp; Help</h1>
+<p class="ch-page-subtitle">How the Contoso Health Analytics Portal works.</p>
+
+<div class="row g-4">
+  <!-- How it works -->
+  <div class="col-lg-8">
+    <div class="ch-card p-4">
+      <h5 class="fw-bold mb-3"><i class="bi bi-diagram-3 me-2" style="color: var(--ch-teal);"></i>How It Works</h5>
+      <p>
+        This portal uses the <strong>App Owns Data</strong> pattern to embed Power BI reports.
+        Your organisation's credentials authenticate with Microsoft Entra ID — end users
+        never need a Power BI license. Here's what happens when you open a report:
+      </p>
+
+      <ol class="mb-4">
+        <li class="mb-2">
+          <strong>You sign in</strong> to this portal with your Contoso Health credentials.
+        </li>
+        <li class="mb-2">
+          The portal <strong>authenticates with Microsoft Entra ID</strong> (Azure AD) using a
+          registered service principal — your secrets never leave the server.
+        </li>
+        <li class="mb-2">
+          An <strong>embed token</strong> is requested from the Power BI REST API. This token is
+          short-lived and scoped to a single report.
+        </li>
+        <li class="mb-2">
+          The token and embed URL are sent to your browser, where the
+          <strong>Power BI JavaScript SDK</strong> renders the full interactive report in an iframe.
+        </li>
+        <li>
+          All report interactivity — slicers, cross-filtering, drill-through, page navigation —
+          works automatically because the iframe runs <strong>Power BI's own viewer</strong>.
+        </li>
+      </ol>
+
+      <h6 class="fw-bold mt-4 mb-2">Technology Stack</h6>
+      <div class="row g-2">
+        <div class="col-auto"><span class="badge bg-dark">Python</span></div>
+        <div class="col-auto"><span class="badge bg-dark">Flask</span></div>
+        <div class="col-auto"><span class="badge bg-dark">Click CLI</span></div>
+        <div class="col-auto"><span class="badge bg-dark">MSAL</span></div>
+        <div class="col-auto"><span class="badge bg-dark">Power BI REST API</span></div>
+        <div class="col-auto"><span class="badge bg-dark">Power BI JS SDK</span></div>
+        <div class="col-auto"><span class="badge bg-dark">Bootstrap 5</span></div>
+        <div class="col-auto"><span class="badge bg-dark">uv</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Helpful links sidebar -->
+  <div class="col-lg-4">
+    <div class="ch-card p-4 mb-4">
+      <h5 class="fw-bold mb-3"><i class="bi bi-link-45deg me-2" style="color: var(--ch-teal);"></i>Useful Links</h5>
+      <ul class="list-unstyled mb-0">
+        <li class="mb-2">
+          <a href="https://learn.microsoft.com/en-us/power-bi/developer/embedded/embed-sample-for-customers?tabs=python" target="_blank" rel="noopener">
+            <i class="bi bi-book me-1"></i> Embed for Your Customers Tutorial
+          </a>
+        </li>
+        <li class="mb-2">
+          <a href="https://learn.microsoft.com/en-us/javascript/api/overview/powerbi/" target="_blank" rel="noopener">
+            <i class="bi bi-code-slash me-1"></i> Power BI JS SDK Reference
+          </a>
+        </li>
+        <li class="mb-2">
+          <a href="https://learn.microsoft.com/en-us/rest/api/power-bi/" target="_blank" rel="noopener">
+            <i class="bi bi-cloud me-1"></i> Power BI REST API
+          </a>
+        </li>
+        <li class="mb-2">
+          <a href="https://github.com/microsoft/PowerBI-Developer-Samples/tree/master/Python/Embed%20for%20your%20customers" target="_blank" rel="noopener">
+            <i class="bi bi-github me-1"></i> Microsoft Python Sample
+          </a>
+        </li>
+        <li>
+          <a href="https://learn.microsoft.com/en-us/power-bi/developer/embedded/power-bi-playground" target="_blank" rel="noopener">
+            <i class="bi bi-play-circle me-1"></i> Power BI Playground
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="ch-card p-4">
+      <h5 class="fw-bold mb-3"><i class="bi bi-question-circle me-2" style="color: var(--ch-teal);"></i>Need Help?</h5>
+      <p class="mb-2">
+        If a report isn't loading, check the browser console for errors and verify that
+        the CLI arguments (<code>--tenant-id</code>, <code>--client-id</code>, etc.) are correct.
+      </p>
+      <p class="mb-0">
+        Run <code>uv run python main.py --help</code> for a full list of options.
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

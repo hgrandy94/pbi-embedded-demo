@@ -1,54 +1,60 @@
 {% extends "base.html" %}
-{% block title %}Login – Power BI Embedded Demo{% endblock %}
+{% block title %}Sign In – Contoso Health{% endblock %}
 
-{% block content %}
-<div class="row justify-content-center mt-5">
-  <div class="col-md-5 col-lg-4">
-    <div class="card shadow">
-      <div class="card-body p-4">
-        <div class="text-center mb-4">
-          <i class="bi bi-bar-chart-fill text-primary" style="font-size: 2.5rem;"></i>
-          <h3 class="mt-2">Power BI Embedded</h3>
-          <p class="text-muted">Sign in to continue</p>
-        </div>
-
-        <form method="POST" action="{{ url_for('auth.login') }}">
-          <div class="mb-3">
-            <label for="username" class="form-label">Username</label>
-            <div class="input-group">
-              <span class="input-group-text"><i class="bi bi-person"></i></span>
-              <input
-                type="text"
-                class="form-control"
-                id="username"
-                name="username"
-                placeholder="Enter username"
-                required
-                autofocus
-              >
-            </div>
-          </div>
-          <div class="mb-4">
-            <label for="password" class="form-label">Password</label>
-            <div class="input-group">
-              <span class="input-group-text"><i class="bi bi-lock"></i></span>
-              <input
-                type="password"
-                class="form-control"
-                id="password"
-                name="password"
-                placeholder="Enter password"
-                required
-              >
-            </div>
-          </div>
-          <button type="submit" class="btn btn-primary w-100">
-            <i class="bi bi-box-arrow-in-right me-1"></i>Sign In
-          </button>
-        </form>
-      </div>
+{% block content_public %}
+<div class="ch-login-wrapper">
+  <div class="ch-login-card">
+    <div class="text-center mb-4">
+      <i class="bi bi-heart-pulse-fill ch-login-logo"></i>
+      <h3 class="mt-2">Contoso Health</h3>
+      <p class="text-muted mb-0">Analytics Portal</p>
     </div>
-    <p class="text-center text-muted mt-3">
+
+    {# Flash messages on login page #}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} py-2 small" role="alert">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('auth.login') }}">
+      <div class="mb-3">
+        <label for="username" class="form-label">Username</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-person"></i></span>
+          <input
+            type="text"
+            class="form-control"
+            id="username"
+            name="username"
+            placeholder="Enter username"
+            required
+            autofocus
+          >
+        </div>
+      </div>
+      <div class="mb-4">
+        <label for="password" class="form-label">Password</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-lock"></i></span>
+          <input
+            type="password"
+            class="form-control"
+            id="password"
+            name="password"
+            placeholder="Enter password"
+            required
+          >
+        </div>
+      </div>
+      <button type="submit" class="btn btn-ch-primary w-100">
+        <i class="bi bi-box-arrow-in-right me-1"></i>Sign In
+      </button>
+    </form>
+
+    <p class="text-center text-muted mt-3 mb-0">
       <small>Default credentials: <code>admin</code> / <code>admin</code></small>
     </p>
   </div>

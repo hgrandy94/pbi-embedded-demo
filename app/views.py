@@ -26,6 +26,13 @@ def reports():
     return render_template("reports.html")
 
 
+@views_bp.route("/about")
+@login_required
+def about():
+    """About & Help page."""
+    return render_template("about.html")
+
+
 @views_bp.route("/getembedinfo", methods=["GET"])
 @login_required
 def get_embed_info():

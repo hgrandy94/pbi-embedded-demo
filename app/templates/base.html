@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}Power BI Embedded Demo{% endblock %}</title>
+  <title>{% block title %}Contoso Health{% endblock %}</title>
 
   <!-- Bootstrap 5 -->
   <link
@@ -17,64 +17,50 @@
     href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
     rel="stylesheet"
   >
-  <!-- Custom styles -->
+  <!-- Contoso Health styles -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   {% block head %}{% endblock %}
 </head>
 <body>
 
-  <!-- ─── Navbar ─────────────────────────────────────────────────────── -->
   {% if current_user.is_authenticated %}
-  <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
-    <div class="container-fluid">
-      <a class="navbar-brand fw-bold" href="{{ url_for('views.home') }}">
-        <i class="bi bi-bar-chart-fill me-2"></i>PBI Embedded Demo
-      </a>
-      <button
-        class="navbar-toggler"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#mainNav"
-        aria-controls="mainNav"
-        aria-expanded="false"
-        aria-label="Toggle navigation"
-      >
-        <span class="navbar-toggler-icon"></span>
-      </button>
-
-      <div class="collapse navbar-collapse" id="mainNav">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <a
-              class="nav-link {% if request.endpoint == 'views.home' %}active{% endif %}"
-              href="{{ url_for('views.home') }}"
-            >
-              <i class="bi bi-house-door me-1"></i>Home
-            </a>
-          </li>
-          <li class="nav-item">
-            <a
-              class="nav-link {% if request.endpoint == 'views.reports' %}active{% endif %}"
-              href="{{ url_for('views.reports') }}"
-            >
-              <i class="bi bi-file-earmark-bar-graph me-1"></i>Reports
-            </a>
-          </li>
-        </ul>
-        <ul class="navbar-nav">
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('auth.logout') }}">
-              <i class="bi bi-box-arrow-right me-1"></i>Logout
-            </a>
-          </li>
-        </ul>
-      </div>
+  <!-- ─── Top Bar ──────────────────────────────────────────────────────── -->
+  <header class="ch-topbar">
+    <button class="ch-sidebar-toggle" onclick="document.getElementById('sidebar').classList.toggle('show')" aria-label="Toggle menu">
+      <i class="bi bi-list"></i>
+    </button>
+    <a class="ch-brand" href="{{ url_for('views.home') }}">
+      <i class="bi bi-heart-pulse-fill ch-logo-icon"></i>
+      Contoso Health
+    </a>
+    <div class="ch-user-area">
+      <span><i class="bi bi-person-circle"></i> {{ current_user.id }}</span>
+      <a href="{{ url_for('auth.logout') }}"><i class="bi bi-box-arrow-right"></i> Logout</a>
     </div>
-  </nav>
-  {% endif %}
+  </header>
 
-  <!-- ─── Flash messages ─────────────────────────────────────────────── -->
-  <div class="container-fluid mt-2">
+  <!-- ─── Sidebar ──────────────────────────────────────────────────────── -->
+  <nav id="sidebar" class="ch-sidebar">
+    <div class="nav-section-label">Menu</div>
+    <a class="nav-link {% if request.endpoint == 'views.home' %}active{% endif %}"
+       href="{{ url_for('views.home') }}">
+      <i class="bi bi-house-door"></i> Home
+    </a>
+    <a class="nav-link {% if request.endpoint == 'views.reports' %}active{% endif %}"
+       href="{{ url_for('views.reports') }}">
+      <i class="bi bi-file-earmark-bar-graph"></i> Reports
+    </a>
+
+    <div class="nav-section-label mt-3">Support</div>
+    <a class="nav-link {% if request.endpoint == 'views.about' %}active{% endif %}"
+       href="{{ url_for('views.about') }}">
+      <i class="bi bi-info-circle"></i> About &amp; Help
+    </a>
+  </nav>
+
+  <!-- ─── Main Content ────────────────────────────────────────────────── -->
+  <div class="ch-main">
+    {# Flash messages #}
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
@@ -85,21 +71,20 @@
         {% endfor %}
       {% endif %}
     {% endwith %}
+
+    {% block content %}{% endblock %}
+
+    <!-- Footer -->
+    <footer class="ch-footer">
+      &copy; 2026 Contoso Health &bull;
+      Powered by <a href="https://aka.ms/pbijs" target="_blank" rel="noopener">Power BI Embedded</a>
+    </footer>
   </div>
 
-  <!-- ─── Page content ───────────────────────────────────────────────── -->
-  <main class="container-fluid mt-3">
-    {% block content %}{% endblock %}
-  </main>
-
-  <!-- ─── Footer ─────────────────────────────────────────────────────── -->
-  <footer class="text-center text-muted py-3 mt-4 border-top">
-    <small>
-      Power BI Embedded Demo &bull;
-      <a href="https://aka.ms/pbijs" target="_blank" rel="noopener">Power BI JS SDK</a> &bull;
-      <a href="https://learn.microsoft.com/en-us/power-bi/developer/embedded/" target="_blank" rel="noopener">Documentation</a>
-    </small>
-  </footer>
+  {% else %}
+  {# Unauthenticated pages (login) – no sidebar/topbar #}
+  {% block content_public %}{% endblock %}
+  {% endif %}
 
   <!-- Bootstrap JS bundle -->
   <script
@@ -108,5 +93,7 @@
     crossorigin="anonymous"
   ></script>
   {% block scripts %}{% endblock %}
+</body>
+</html>
 </body>
 </html>

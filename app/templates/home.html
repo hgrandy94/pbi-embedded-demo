@@ -1,73 +1,82 @@
 {% extends "base.html" %}
-{% block title %}Home – Power BI Embedded Demo{% endblock %}
+{% block title %}Home – Contoso Health{% endblock %}
 
 {% block content %}
-<div class="row mt-4">
-  <div class="col-lg-8">
-    <h1 class="mb-3">Welcome to the Power BI Embedded Demo</h1>
-    <p class="lead">
-      This application demonstrates how to embed Power BI reports into a
-      Python Flask web application using the
-      <strong>App Owns Data</strong> (embed for your customers) pattern.
-    </p>
+<h1 class="ch-page-title">Welcome back</h1>
+<p class="ch-page-subtitle">Contoso Health Analytics Portal — powered by Power BI Embedded</p>
 
-    <hr>
-
-    <div class="row g-4 mt-2">
-      <!-- Reports card -->
-      <div class="col-md-6">
-        <div class="card h-100 border-primary shadow-sm">
-          <div class="card-body text-center">
-            <i class="bi bi-file-earmark-bar-graph text-primary" style="font-size: 3rem;"></i>
-            <h5 class="card-title mt-3">Reports</h5>
-            <p class="card-text">
-              View your Power BI report embedded directly in the browser.
-            </p>
-            <a href="{{ url_for('views.reports') }}" class="btn btn-outline-primary">
-              <i class="bi bi-arrow-right-circle me-1"></i>Open Reports
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Info card -->
-      <div class="col-md-6">
-        <div class="card h-100 shadow-sm">
-          <div class="card-body text-center">
-            <i class="bi bi-info-circle text-secondary" style="font-size: 3rem;"></i>
-            <h5 class="card-title mt-3">How It Works</h5>
-            <p class="card-text">
-              The app authenticates via <strong>Microsoft Entra ID</strong>
-              (Azure AD) and requests an embed token from the Power BI REST API.
-            </p>
-            <a
-              href="https://learn.microsoft.com/en-us/power-bi/developer/embedded/embed-sample-for-customers?tabs=python"
-              target="_blank"
-              rel="noopener"
-              class="btn btn-outline-secondary"
-            >
-              <i class="bi bi-book me-1"></i>Read the Docs
-            </a>
-          </div>
-        </div>
-      </div>
+<!-- Stat cards row -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="ch-stat-card">
+      <div class="ch-stat-icon" style="color: var(--ch-teal);"><i class="bi bi-people-fill"></i></div>
+      <div class="ch-stat-value">12,847</div>
+      <div class="ch-stat-label">Active Patients</div>
     </div>
   </div>
+  <div class="col-6 col-md-3">
+    <div class="ch-stat-card">
+      <div class="ch-stat-icon" style="color: #4CAF50;"><i class="bi bi-clipboard2-pulse-fill"></i></div>
+      <div class="ch-stat-value">3,291</div>
+      <div class="ch-stat-label">Appointments Today</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="ch-stat-card">
+      <div class="ch-stat-icon" style="color: #FF9800;"><i class="bi bi-hospital-fill"></i></div>
+      <div class="ch-stat-value">18</div>
+      <div class="ch-stat-label">Facilities</div>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="ch-stat-card">
+      <div class="ch-stat-icon" style="color: var(--ch-navy);"><i class="bi bi-graph-up-arrow"></i></div>
+      <div class="ch-stat-value">96.2%</div>
+      <div class="ch-stat-label">Satisfaction Score</div>
+    </div>
+  </div>
+</div>
 
-  <!-- Quick-start sidebar -->
-  <div class="col-lg-4 mt-4 mt-lg-0">
-    <div class="card bg-light shadow-sm">
-      <div class="card-header fw-bold"><i class="bi bi-gear me-1"></i>Quick Start</div>
-      <div class="card-body">
-        <ol class="mb-0">
-          <li>Register an app in <strong>Microsoft Entra ID</strong></li>
-          <li>Gather <code>--tenant-id</code>, <code>--client-id</code>, <code>--client-secret</code></li>
-          <li>Get <code>--workspace-id</code> and <code>--report-id</code> from Power BI</li>
-          <li>Run <code>uv run python main.py --tenant-id=… --client-id=… --client-secret=… --workspace-id=… --report-id=…</code></li>
-          <li>Open <a href="http://localhost:5000">http://localhost:5000</a></li>
-        </ol>
-        <p class="mt-2 mb-0"><small>Run <code>uv run python main.py --help</code> for all options.</small></p>
-      </div>
+<!-- Action cards -->
+<div class="row g-4">
+  <div class="col-md-6 col-lg-4">
+    <div class="ch-card p-4 text-center h-100">
+      <i class="bi bi-file-earmark-bar-graph ch-card-icon"></i>
+      <h5 class="mt-3 fw-bold">Health Reports</h5>
+      <p class="text-muted">
+        Explore live Power BI reports embedded directly in the portal — interactive
+        slicers, drill-through, and cross-filtering included.
+      </p>
+      <a href="{{ url_for('views.reports') }}" class="btn btn-ch-primary">
+        <i class="bi bi-arrow-right-circle me-1"></i>Open Reports
+      </a>
+    </div>
+  </div>
+  <div class="col-md-6 col-lg-4">
+    <div class="ch-card p-4 text-center h-100">
+      <i class="bi bi-shield-check ch-card-icon"></i>
+      <h5 class="mt-3 fw-bold">Secure by Design</h5>
+      <p class="text-muted">
+        Authentication is handled via Microsoft Entra ID using the App Owns Data
+        pattern — end users never need a Power BI license.
+      </p>
+      <a href="{{ url_for('views.about') }}" class="btn btn-ch-outline">
+        <i class="bi bi-info-circle me-1"></i>Learn More
+      </a>
+    </div>
+  </div>
+  <div class="col-md-6 col-lg-4">
+    <div class="ch-card p-4 text-center h-100">
+      <i class="bi bi-journal-code ch-card-icon"></i>
+      <h5 class="mt-3 fw-bold">Developer Docs</h5>
+      <p class="text-muted">
+        Built with Flask, MSAL, and the Power BI JavaScript SDK.
+        Browse the full source and architecture documentation.
+      </p>
+      <a href="https://learn.microsoft.com/en-us/power-bi/developer/embedded/embed-sample-for-customers?tabs=python"
+         target="_blank" rel="noopener" class="btn btn-ch-outline">
+        <i class="bi bi-book me-1"></i>Read the Docs
+      </a>
     </div>
   </div>
 </div>
