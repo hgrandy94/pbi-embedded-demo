@@ -11,21 +11,40 @@
 
 {% block content %}
 <h1 class="ch-page-title"><i class="bi bi-file-earmark-bar-graph me-2"></i>Health Reports</h1>
-<p class="ch-page-subtitle">Interactive Power BI report — use slicers, filters, and page tabs to explore the data.</p>
+<p class="ch-page-subtitle">Select a report from the sidebar or choose one below.</p>
 
-<!-- Report container -->
-<div id="report-container" class="ch-card bg-white"></div>
+<!-- Report picker (shown when no report is selected) -->
+<div id="report-picker" class="row g-4">
+  <div class="col-12 text-center py-5" id="picker-loading">
+    <div class="spinner-border" style="color: var(--ch-teal);" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-2" style="color: var(--ch-muted);">Loading available reports&hellip;</p>
+  </div>
+</div>
+
+<!-- Report viewer (shown when a report is selected) -->
+<div id="report-viewer" class="d-none">
+  <div class="d-flex align-items-center mb-3">
+    <button id="back-to-picker" class="btn btn-sm btn-ch-outline me-3">
+      <i class="bi bi-arrow-left me-1"></i> All Reports
+    </button>
+    <h5 id="report-viewer-title" class="mb-0 fw-bold" style="color: var(--ch-navy);"></h5>
+  </div>
+
+  <div id="report-container" class="ch-card bg-white"></div>
+
+  <!-- Loading spinner (shown while report loads) -->
+  <div id="loading-spinner" class="text-center py-5">
+    <div class="spinner-border" style="color: var(--ch-teal);" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-2" style="color: var(--ch-muted);">Loading report&hellip;</p>
+  </div>
+</div>
 
 <!-- Error container (hidden by default) -->
 <div id="error-container" class="alert alert-danger mt-3 d-none" role="alert"></div>
-
-<!-- Loading spinner (shown while report loads) -->
-<div id="loading-spinner" class="text-center py-5">
-  <div class="spinner-border" style="color: var(--ch-teal);" role="status">
-    <span class="visually-hidden">Loading...</span>
-  </div>
-  <p class="mt-2" style="color: var(--ch-muted);">Loading report&hellip;</p>
-</div>
 {% endblock %}
 
 {% block scripts %}

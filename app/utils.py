@@ -25,9 +25,6 @@ class Utils:
         if auth_mode.lower() == "serviceprincipal" and not app.config.get("TENANT_ID"):
             return "Tenant ID is not provided in the configuration"
 
-        if not app.config.get("REPORT_ID"):
-            return "Report ID is not provided in the configuration"
-
         if not app.config.get("WORKSPACE_ID"):
             return "Workspace ID is not provided in the configuration"
 

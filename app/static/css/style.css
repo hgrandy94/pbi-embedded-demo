@@ -132,6 +132,45 @@ a:hover { color: var(--ch-navy); }
   text-align: center;
 }
 
+/* ── Sidebar sub-navigation (report list) ─────────────────────────────── */
+.ch-sidebar-subnav {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.25s ease;
+}
+
+.ch-sidebar-subnav.show {
+  max-height: 500px;
+}
+
+.ch-sidebar-chevron {
+  font-size: 0.7rem;
+  transition: transform 0.2s ease;
+}
+
+.ch-sidebar-chevron.ch-rotate {
+  transform: rotate(180deg);
+}
+
+.ch-subnav-link {
+  padding: 0.4rem 1.25rem 0.4rem 2.75rem !important;
+  font-size: 0.82rem !important;
+  color: var(--ch-muted) !important;
+  border-left: 3px solid transparent !important;
+}
+
+.ch-subnav-link:hover {
+  color: var(--ch-teal) !important;
+  background: var(--ch-bg) !important;
+}
+
+.ch-subnav-link.active {
+  color: var(--ch-teal) !important;
+  font-weight: 600 !important;
+  border-left-color: var(--ch-teal) !important;
+  background: linear-gradient(90deg, rgba(0, 151, 167, 0.06), transparent) !important;
+}
+
 /* ── Mobile sidebar toggle ────────────────────────────────────────────── */
 .ch-sidebar-toggle {
   display: none;

@@ -1,0 +1,27 @@
+{
+  "_comment": "Demo user credentials and report access. For demonstration only — never use in production.",
+  "_rls_note": "The 'rls' field only works when the Power BI dataset has RLS roles defined in Power BI Desktop. Set 'rls' to an object with 'username' and 'roles' keys matching the DAX role names. Leave as null when the dataset has no RLS.",
+  "users": {
+    "admin": {
+      "password": "admin",
+      "display_name": "Alice Administrator",
+      "role_label": "System Administrator",
+      "allowed_reports": "*",
+      "rls": null
+    },
+    "uksales": {
+      "password": "uksales",
+      "display_name": "UK Brian",
+      "role_label": "UK Regional Analyst",
+      "allowed_reports": "*",
+      "rls": null
+    },
+    "viewer": {
+      "password": "viewer",
+      "display_name": "Carla Viewer",
+      "role_label": "Clinic Viewer",
+      "allowed_reports": "*",
+      "rls": null
+    }
+  }
+}

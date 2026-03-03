@@ -2,8 +2,11 @@
 {% block title %}Home – Contoso Health{% endblock %}
 
 {% block content %}
-<h1 class="ch-page-title">Welcome back</h1>
-<p class="ch-page-subtitle">Contoso Health Analytics Portal — powered by Power BI Embedded</p>
+<h1 class="ch-page-title">Welcome back, {{ current_user.display_name }}</h1>
+<p class="ch-page-subtitle">
+  {{ current_user.role_label }}
+  &mdash; Contoso Health Analytics Portal
+</p>
 
 <!-- Stat cards row -->
 <div class="row g-3 mb-4">

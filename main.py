@@ -1,3 +1,6 @@
+import json
+import pathlib
+
 import click
 
 from app import create_app
@@ -5,8 +8,13 @@ from app import create_app
 
 @click.command("pbi-demo")
 @click.option("--secret-key", default="change-me-in-production", help="Flask secret key for session signing.")
-@click.option("--demo-username", default="admin", show_default=True, help="Web UI login username.")
-@click.option("--demo-password", default="admin", show_default=True, help="Web UI login password.")
+@click.option(
+    "--users-config",
+    type=click.Path(exists=True, dir_okay=False),
+    default="demo_users.json",
+    show_default=True,
+    help="Path to JSON file defining demo users and their report/RLS access.",
+)
 @click.option(
     "--auth-mode",
     type=click.Choice(["ServicePrincipal", "MasterUser"], case_sensitive=False),
@@ -18,7 +26,7 @@ from app import create_app
 @click.option("--client-id", required=True, help="Application (client) ID of the registered app.")
 @click.option("--client-secret", default="", help="Client secret (required for ServicePrincipal mode).")
 @click.option("--workspace-id", required=True, help="Power BI workspace ID containing the report.")
-@click.option("--report-id", required=True, help="ID of the Power BI report to embed.")
+@click.option("--report-id", default="", help="Optional default report ID (overrides per-user config).")
 @click.option("--pbi-user", default="", help="Master user email (MasterUser mode only).")
 @click.option("--pbi-pass", default="", help="Master user password (MasterUser mode only).")
 @click.option(
@@ -37,8 +45,7 @@ from app import create_app
 @click.option("--debug/--no-debug", default=True, show_default=True, help="Run Flask in debug mode.")
 def main(
     secret_key: str,
-    demo_username: str,
-    demo_password: str,
+    users_config: str,
     auth_mode: str,
     tenant_id: str,
     client_id: str,
@@ -54,10 +61,14 @@ def main(
 ) -> None:
     """Power BI Embedded Demo – Flask web application."""
 
+    # Load the demo-users JSON file
+    users_path = pathlib.Path(users_config)
+    with users_path.open() as f:
+        users_data = json.load(f)
+
     config = {
         "SECRET_KEY": secret_key,
-        "DEMO_USERNAME": demo_username,
-        "DEMO_PASSWORD": demo_password,
+        "DEMO_USERS": users_data.get("users", {}),
         "AUTHENTICATION_MODE": auth_mode,
         "TENANT_ID": tenant_id,
         "CLIENT_ID": client_id,

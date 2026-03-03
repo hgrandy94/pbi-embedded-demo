@@ -34,7 +34,7 @@
       Contoso Health
     </a>
     <div class="ch-user-area">
-      <span><i class="bi bi-person-circle"></i> {{ current_user.id }}</span>
+      <span><i class="bi bi-person-circle"></i> {{ current_user.display_name }}</span>
       <a href="{{ url_for('auth.logout') }}"><i class="bi bi-box-arrow-right"></i> Logout</a>
     </div>
   </header>
@@ -46,10 +46,17 @@
        href="{{ url_for('views.home') }}">
       <i class="bi bi-house-door"></i> Home
     </a>
+
+    <!-- Reports section – sub-items loaded dynamically by JS -->
     <a class="nav-link {% if request.endpoint == 'views.reports' %}active{% endif %}"
-       href="{{ url_for('views.reports') }}">
+       href="{{ url_for('views.reports') }}"
+       id="sidebar-reports-link">
       <i class="bi bi-file-earmark-bar-graph"></i> Reports
+      <i class="bi bi-chevron-down ms-auto ch-sidebar-chevron" id="sidebar-reports-chevron"></i>
     </a>
+    <div id="sidebar-report-list" class="ch-sidebar-subnav collapse">
+      <!-- Populated by embedding.js -->
+    </div>
 
     <div class="nav-section-label mt-3">Support</div>
     <a class="nav-link {% if request.endpoint == 'views.about' %}active{% endif %}"
@@ -92,8 +99,54 @@
     integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
     crossorigin="anonymous"
   ></script>
+
+  <!-- Populate sidebar report sub-items on every authenticated page -->
+  <script>
+  (function () {
+    var list = document.getElementById("sidebar-report-list");
+    var chevron = document.getElementById("sidebar-reports-chevron");
+    var reportsLink = document.getElementById("sidebar-reports-link");
+    if (!list) return;
+
+    // Toggle expand / collapse
+    reportsLink.addEventListener("click", function (e) {
+      // If already on the reports page, just toggle the sub-nav
+      if (window.location.pathname === "/reports") {
+        e.preventDefault();
+      }
+      list.classList.toggle("show");
+      chevron.classList.toggle("ch-rotate");
+    });
+
+    fetch("/api/reports")
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (!data.reports || data.reports.length === 0) return;
+        data.reports.forEach(function (rpt) {
+          var a = document.createElement("a");
+          a.className = "nav-link ch-subnav-link";
+          a.href = "/reports?report_id=" + encodeURIComponent(rpt.id);
+          a.innerHTML = '<i class="bi bi-graph-up"></i> ' + rpt.name;
+          list.appendChild(a);
+        });
+        // Auto-expand if we're on the reports page
+        if (window.location.pathname === "/reports") {
+          list.classList.add("show");
+          chevron.classList.add("ch-rotate");
+          // Highlight current report
+          var params = new URLSearchParams(window.location.search);
+          var rid = params.get("report_id");
+          if (rid) {
+            list.querySelectorAll("a").forEach(function (link) {
+              if (link.href.indexOf(rid) !== -1) link.classList.add("active");
+            });
+          }
+        }
+      })
+      .catch(function () { /* silently ignore on pages where API isn't available */ });
+  })();
+  </script>
+
   {% block scripts %}{% endblock %}
-</body>
-</html>
 </body>
 </html>
