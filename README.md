@@ -1,9 +1,3 @@
-# This repo is a work in progress!
-Additions to come:
-1. A pbix file provided to enable running the end-to-end demo.
-2. Instructions for setting up RLS roles in PBI.
-3. Additional guidance on considerations for using PBI Embedded in production.
-
 # Warning: The contents of this repo are intended for demo purposes only!
 
 # Power BI Embedded Demo
