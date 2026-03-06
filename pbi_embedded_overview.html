@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Power BI Embedded — Interactive Overview</title>
+    <style>
+        /* ── Reset & Base ─────────────────────────────────── */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --navy:  #0b1d3a;
+            --blue:  #1a73e8;
+            --teal:  #00b4d8;
+            --green: #38b000;
+            --amber: #ffb703;
+            --red:   #e63946;
+            --bg:    #f4f6fa;
+            --card:  #ffffff;
+            --text:  #1e293b;
+            --muted: #64748b;
+            --border:#e2e8f0;
+            --radius: 12px;
+            --shadow: 0 2px 12px rgba(0,0,0,.06);
+        }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.65;
+        }
+
+        /* ── Sticky Nav ───────────────────────────────────── */
+        .top-nav {
+            position: sticky; top: 0; z-index: 100;
+            background: var(--navy);
+            color: #fff;
+            display: flex; align-items: center; gap: 1rem;
+            padding: .65rem 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,.25);
+        }
+        .top-nav .logo { font-weight: 700; font-size: 1.1rem; white-space: nowrap; }
+        .top-nav .logo span { color: var(--teal); }
+        .nav-links { display: flex; gap: .15rem; flex-wrap: wrap; margin-left: auto; }
+        .nav-links a {
+            color: rgba(255,255,255,.8); text-decoration: none;
+            font-size: .78rem; padding: .35rem .65rem; border-radius: 6px;
+            transition: background .2s, color .2s;
+        }
+        .nav-links a:hover { background: rgba(255,255,255,.12); color: #fff; }
+
+        /* ── Hero ─────────────────────────────────────────── */
+        .hero {
+            background: linear-gradient(135deg, var(--navy) 0%, #0d3b66 60%, var(--teal) 100%);
+            color: #fff;
+            text-align: center;
+            padding: 4.5rem 2rem 3.5rem;
+        }
+        .hero h1 { font-size: 2.6rem; font-weight: 800; margin-bottom: .5rem; }
+        .hero p { font-size: 1.15rem; opacity: .85; max-width: 640px; margin: 0 auto; }
+
+        /* ── Sections ─────────────────────────────────────── */
+        .section {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 3.5rem 1.5rem;
+        }
+        .section h2 {
+            font-size: 1.8rem; font-weight: 700;
+            margin-bottom: .35rem;
+            display: flex; align-items: center; gap: .5rem;
+        }
+        .section h2 .num {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 38px; height: 38px; border-radius: 50%;
+            background: var(--blue); color: #fff;
+            font-size: .95rem; font-weight: 700; flex-shrink: 0;
+        }
+        .section .subtitle {
+            color: var(--muted); font-size: 1.05rem; margin-bottom: 2rem; max-width: 760px;
+        }
+        .divider {
+            max-width: 1100px; margin: 0 auto;
+            border: none; border-top: 1px solid var(--border);
+        }
+
+        /* ── Cards ────────────────────────────────────────── */
+        .card-grid { display: grid; gap: 1.25rem; }
+        .card-grid.cols-2 { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+        .card-grid.cols-3 { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            transition: transform .2s, box-shadow .2s;
+        }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,.09); }
+        .card h3 { font-size: 1.05rem; margin-bottom: .5rem; }
+        .card p, .card li { font-size: .92rem; color: var(--muted); }
+        .card ul { padding-left: 1.2rem; }
+        .card ul li { margin-bottom: .25rem; }
+
+        /* ── Badge ────────────────────────────────────────── */
+        .badge {
+            display: inline-block; font-size: .72rem; font-weight: 600;
+            padding: .18rem .55rem; border-radius: 999px; text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+        .badge-blue { background: #dbeafe; color: #1e40af; }
+        .badge-green { background: #dcfce7; color: #166534; }
+        .badge-amber { background: #fef3c7; color: #92400e; }
+        .badge-red   { background: #fee2e2; color: #991b1b; }
+        .badge-teal  { background: #ccfbf1; color: #115e59; }
+
+        /* ── Pattern comparison ────────────────────────────── */
+        .pattern-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .pattern-card {
+            border-radius: var(--radius);
+            padding: 2rem;
+            text-align: center;
+            border: 2px solid var(--border);
+            transition: border-color .3s, box-shadow .3s;
+            cursor: default;
+        }
+        .pattern-card.active { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(26,115,232,.15); }
+        .pattern-card h3 { font-size: 1.2rem; margin-bottom: .35rem; }
+        .pattern-card .icon { font-size: 2.4rem; display: block; margin-bottom: .75rem; }
+        .pattern-card .desc { font-size: .9rem; color: var(--muted); margin-bottom: 1rem; }
+        .pattern-card table { width: 100%; font-size: .82rem; text-align: left; border-collapse: collapse; }
+        .pattern-card table td { padding: .3rem .4rem; border-bottom: 1px solid var(--border); }
+        .pattern-card table td:first-child { font-weight: 600; color: var(--text); white-space: nowrap; }
+
+        /* ── Flow diagram ─────────────────────────────────── */
+        .flow-container { position: relative; padding: 1.5rem 0; }
+        .flow-track {
+            display: flex; align-items: flex-start; gap: 0;
+            overflow-x: auto; padding-bottom: 1rem;
+        }
+        .flow-step {
+            display: flex; flex-direction: column; align-items: center;
+            min-width: 130px; position: relative; text-align: center;
+            opacity: 0; transform: translateY(18px);
+            transition: opacity .45s ease, transform .45s ease;
+        }
+        .flow-step.visible { opacity: 1; transform: translateY(0); }
+        .flow-step .circle {
+            width: 52px; height: 52px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem; color: #fff; font-weight: 700;
+            position: relative; z-index: 2;
+        }
+        .flow-step .label { font-size: .78rem; margin-top: .5rem; max-width: 120px; font-weight: 600; }
+        .flow-step .detail { font-size: .72rem; color: var(--muted); max-width: 120px; margin-top: .15rem; }
+        .flow-arrow {
+            display: flex; align-items: center;
+            font-size: 1.2rem; color: var(--muted);
+            padding-top: 14px; min-width: 36px; justify-content: center;
+            opacity: 0; transition: opacity .4s ease;
+        }
+        .flow-arrow.visible { opacity: 1; }
+
+        /* ── RLS Interactive ──────────────────────────────── */
+        .rls-demo {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+        .rls-tabs { display: flex; border-bottom: 1px solid var(--border); }
+        .rls-tab {
+            flex: 1; padding: .85rem 1rem;
+            text-align: center;
+            font-size: .88rem; font-weight: 600;
+            cursor: pointer;
+            background: var(--bg);
+            border: none; outline: none;
+            color: var(--muted);
+            transition: background .2s, color .2s;
+        }
+        .rls-tab.active { background: var(--card); color: var(--blue); box-shadow: inset 0 -2px 0 var(--blue); }
+        .rls-panel { display: none; padding: 1.75rem; }
+        .rls-panel.active { display: block; }
+
+        .rls-visual {
+            display: flex; gap: 1.5rem; align-items: flex-start; flex-wrap: wrap;
+        }
+        .rls-data-table {
+            flex: 1; min-width: 280px;
+            border-collapse: collapse; font-size: .82rem;
+        }
+        .rls-data-table th {
+            background: var(--navy); color: #fff;
+            padding: .45rem .65rem; text-align: left; font-weight: 600;
+        }
+        .rls-data-table td {
+            padding: .4rem .65rem; border-bottom: 1px solid var(--border);
+        }
+        .rls-data-table tr.highlight td { background: #dbeafe; }
+        .rls-data-table tr.dimmed td { opacity: .3; }
+
+        .rls-info-box {
+            flex: 0 0 280px;
+            background: var(--bg); border-radius: 8px;
+            padding: 1.25rem; font-size: .85rem;
+        }
+        .rls-info-box h4 { margin-bottom: .5rem; color: var(--blue); }
+        .rls-info-box code {
+            display: block; background: var(--navy); color: #a5f3fc;
+            padding: .75rem; border-radius: 6px; font-size: .78rem;
+            margin-top: .5rem; white-space: pre-wrap;
+        }
+
+        /* ── Token visual ─────────────────────────────────── */
+        .token-visual {
+            display: flex; gap: 1.25rem; flex-wrap: wrap;
+            align-items: stretch;
+        }
+        .token-box {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 1.5rem;
+            box-shadow: var(--shadow); flex: 1; min-width: 260px;
+        }
+        .token-box h4 { font-size: .95rem; margin-bottom: .75rem; display: flex; align-items: center; gap: .4rem; }
+        .token-jwt {
+            background: var(--navy); border-radius: 8px; padding: 1rem;
+            font-family: 'Cascadia Code', 'Fira Code', monospace;
+            font-size: .72rem; line-height: 1.7; color: #94a3b8;
+            overflow-x: auto;
+        }
+        .token-jwt .t-header { color: var(--red); }
+        .token-jwt .t-payload { color: var(--teal); }
+        .token-jwt .t-sig { color: var(--amber); }
+
+        .lifecycle-steps { counter-reset: step; }
+        .lifecycle-step {
+            display: flex; gap: .75rem; margin-bottom: 1rem; align-items: flex-start;
+        }
+        .lifecycle-step::before {
+            counter-increment: step;
+            content: counter(step);
+            display: flex; align-items: center; justify-content: center;
+            min-width: 28px; height: 28px; border-radius: 50%;
+            background: var(--blue); color: #fff;
+            font-size: .75rem; font-weight: 700; flex-shrink: 0; margin-top: 2px;
+        }
+        .lifecycle-step .step-text { font-size: .88rem; }
+        .lifecycle-step .step-text strong { color: var(--text); }
+
+        /* ── Isolation visual ─────────────────────────────── */
+        .isolation-switcher { display: flex; gap: .5rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+        .iso-btn {
+            padding: .55rem 1.1rem; border-radius: 999px;
+            border: 1px solid var(--border);
+            background: var(--card); color: var(--text);
+            font-size: .82rem; font-weight: 600; cursor: pointer;
+            transition: all .25s;
+        }
+        .iso-btn.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+        .iso-scene {
+            display: none;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2rem;
+            box-shadow: var(--shadow);
+        }
+        .iso-scene.active { display: block; }
+
+        .iso-diagram {
+            display: flex; gap: 1.25rem; justify-content: center;
+            flex-wrap: wrap; margin-bottom: 1.5rem;
+        }
+        .iso-box {
+            border: 2px solid var(--border); border-radius: var(--radius);
+            padding: 1.25rem; min-width: 160px; text-align: center;
+            transition: border-color .3s;
+        }
+        .iso-box.workspace { border-color: var(--blue); background: #eff6ff; }
+        .iso-box.capacity  { border-color: var(--teal); background: #ecfeff; }
+        .iso-box.dataset   { border-color: var(--green); background: #f0fdf4; }
+        .iso-box .box-label { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+        .iso-box .box-title { font-size: .95rem; font-weight: 700; margin-top: .2rem; }
+        .iso-inner { display: flex; gap: .5rem; margin-top: .65rem; justify-content: center; }
+        .iso-chip {
+            font-size: .7rem; padding: .2rem .55rem;
+            border-radius: 6px; background: #fff; border: 1px solid var(--border);
+            font-weight: 600;
+        }
+
+        .iso-traits { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: .75rem; }
+        .iso-trait {
+            display: flex; align-items: center; gap: .5rem;
+            font-size: .85rem; padding: .5rem .75rem;
+            background: var(--bg); border-radius: 8px;
+        }
+        .iso-trait .dot {
+            width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+        }
+        .dot-green { background: var(--green); }
+        .dot-amber { background: var(--amber); }
+        .dot-red   { background: var(--red); }
+
+        /* ── Comparison table ─────────────────────────────── */
+        .comp-table {
+            width: 100%; border-collapse: collapse; font-size: .82rem;
+            background: var(--card); border-radius: var(--radius);
+            overflow: hidden; box-shadow: var(--shadow);
+            margin-top: 1.5rem;
+        }
+        .comp-table th {
+            background: var(--navy); color: #fff;
+            padding: .6rem .75rem; text-align: left; font-weight: 600;
+        }
+        .comp-table td {
+            padding: .55rem .75rem; border-bottom: 1px solid var(--border);
+        }
+        .comp-table tbody tr:hover td { background: #f1f5f9; }
+
+        /* ── Licensing ────────────────────────────────────── */
+        .lic-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem; }
+        .lic-card {
+            border-radius: var(--radius); padding: 1.75rem;
+            border: 2px solid var(--border); text-align: center;
+            transition: border-color .3s, box-shadow .3s;
+        }
+        .lic-card:hover { border-color: var(--blue); box-shadow: 0 4px 16px rgba(26,115,232,.12); }
+        .lic-card h4 { font-size: 1.05rem; margin-bottom: .3rem; }
+        .lic-card .lic-model { font-size: .82rem; color: var(--muted); margin-bottom: .75rem; }
+        .lic-card .lic-best { font-size: .85rem; font-weight: 600; color: var(--blue); }
+
+        /* ── Footer ───────────────────────────────────────── */
+        .footer {
+            text-align: center; padding: 2.5rem 1rem;
+            color: var(--muted); font-size: .82rem;
+            border-top: 1px solid var(--border);
+            margin-top: 2rem;
+        }
+        .footer a { color: var(--blue); text-decoration: none; }
+
+        /* ── Utilities ────────────────────────────────────── */
+        .mt { margin-top: 1.5rem; }
+        .fade-in { opacity: 0; transform: translateY(16px); transition: opacity .5s ease, transform .5s ease; }
+        .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+        /* ── Token Anim ───────────────────────────────────── */
+        .token-anim-track { position: relative; height: 120px; margin: 1.5rem 0; }
+        .ta-lane {
+            position: absolute; left: 0; right: 0;
+            display: flex; align-items: center; height: 36px;
+        }
+        .ta-lane:nth-child(1) { top: 0; }
+        .ta-lane:nth-child(2) { top: 42px; }
+        .ta-lane:nth-child(3) { top: 84px; }
+        .ta-actor {
+            width: 90px; text-align: center; font-size: .72rem; font-weight: 700;
+            background: var(--navy); color: #fff; padding: .3rem .4rem; border-radius: 6px;
+            flex-shrink: 0;
+        }
+        .ta-line { flex: 1; height: 2px; background: var(--border); position: relative; margin: 0 8px; }
+        .ta-packet {
+            position: absolute; top: -8px;
+            width: 18px; height: 18px; border-radius: 4px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .6rem; font-weight: 700; color: #fff;
+        }
+        .ta-packet.req  { background: var(--blue); }
+        .ta-packet.tok  { background: var(--green); }
+        .ta-packet.show { background: var(--teal); }
+
+        /* ── API Chain ────────────────────────────────────── */
+        .api-chain { display: flex; flex-direction: column; gap: 0; }
+        .api-step-row { display: flex; gap: 0; }
+        .api-num-col {
+            display: flex; flex-direction: column; align-items: center;
+            width: 48px; flex-shrink: 0; padding-top: 1.25rem;
+        }
+        .api-num {
+            width: 32px; height: 32px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: .82rem; font-weight: 700;
+            flex-shrink: 0; z-index: 2;
+        }
+        .api-connector {
+            flex: 1; width: 2px; background: var(--border);
+            margin-top: 4px; margin-bottom: -4px;
+        }
+        .api-card {
+            flex: 1;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.35rem 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow);
+            transition: transform .2s, box-shadow .2s;
+        }
+        .api-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.09); }
+        .api-card-header {
+            display: flex; align-items: center; gap: .5rem;
+        }
+        .api-endpoint { font-weight: 700; font-size: .95rem; }
+        .api-url {
+            font-family: 'Cascadia Code', 'Fira Code', monospace;
+            font-size: .75rem; color: var(--muted); margin-top: .25rem;
+            background: var(--bg); padding: .3rem .6rem; border-radius: 6px;
+            display: inline-block;
+        }
+        .api-desc { font-size: .88rem; color: var(--muted); margin-top: .65rem; }
+        .api-response { margin-top: .85rem; }
+        .api-response-label { font-size: .75rem; font-weight: 600; color: var(--text); margin-bottom: .35rem; }
+
+        /* ── Responsive ───────────────────────────────────── */
+        @media (max-width: 720px) {
+            .hero h1 { font-size: 1.8rem; }
+            .pattern-columns { grid-template-columns: 1fr; }
+            .rls-visual { flex-direction: column; }
+            .rls-info-box { flex: 1 1 auto; }
+            .token-visual { flex-direction: column; }
+            .nav-links a { font-size: .7rem; padding: .25rem .45rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ───────── Navigation ───────── -->
+<nav class="top-nav">
+    <div class="logo">⚡ Power BI <span>Embedded</span></div>
+    <div class="nav-links">
+        <a href="#what">What Is It</a>
+        <a href="#patterns">Patterns</a>
+        <a href="#setup">Setup</a>
+        <a href="#flow">Flow</a>
+        <a href="#apis">APIs</a>
+        <a href="#rls">RLS</a>
+        <a href="#tokens">Tokens</a>
+        <a href="#isolation">Isolation</a>
+        <a href="#licensing">Licensing</a>
+    </div>
+</nav>
+
+<!-- ───────── Hero ───────── -->
+<header class="hero">
+    <h1>Power BI Embedded</h1>
+    <p>An interactive visual guide for BI professionals — how embedding works, row-level security, embed tokens, and multi-tenant isolation.</p>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- 1. WHAT IS IT                                          -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="section fade-in" id="what">
+    <h2><span class="num">1</span> What Is Power BI Embedded?</h2>
+    <p class="subtitle">Take your Power BI reports and display them inside your own web application. End users see full interactivity — slicers, filters, drill-through — without ever visiting app.powerbi.com.</p>
+
+    <div class="card-grid cols-3">
+        <div class="card">
+            <h3>📊 Same Reports</h3>
+            <p>Build in Power BI Desktop, publish to a workspace — exactly the same workflow you know. Nothing changes in how you author.</p>
+        </div>
+        <div class="card">
+            <h3>🔑 No User Licenses</h3>
+            <p>End users do <strong>not</strong> need Power BI Pro or PPU licenses. Your app's capacity handles everything.</p>
+        </div>
+        <div class="card">
+            <h3>🎨 Your Branding</h3>
+            <p>Reports render inside your app's UI. You control the navigation, layout, and branding around the report.</p>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- 2. TWO PATTERNS                                        -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="section fade-in" id="patterns">
+    <h2><span class="num">2</span> Two Embedding Patterns</h2>
+    <p class="subtitle">Choose based on who your audience is and whether they have Power BI licences.</p>
+
+    <div class="pattern-columns">
+        <div class="pattern-card active" id="pc-app">
+            <span class="icon">🏢</span>
+            <h3>App Owns Data</h3>
+            <span class="badge badge-green">Recommended for customers</span>
+            <p class="desc">Your application authenticates with a service principal. End users have no Azure AD / Power BI interaction.</p>
+            <table>
+                <tr><td>Who logs in?</td><td>Your app (service principal)</td></tr>
+                <tr><td>User licence?</td><td>Not needed</td></tr>
+                <tr><td>Best for</td><td>External users, ISV apps, portals</td></tr>
+            </table>
+        </div>
+        <div class="pattern-card" id="pc-user">
+            <span class="icon">👤</span>
+            <h3>User Owns Data</h3>
+            <span class="badge badge-blue">For internal teams</span>
+            <p class="desc">Each user logs in to Azure AD themselves. They need their own Pro or PPU licence.</p>
+            <table>
+                <tr><td>Who logs in?</td><td>Each user via Azure AD</td></tr>
+                <tr><td>User licence?</td><td>Pro or PPU required</td></tr>
+                <tr><td>Best for</td><td>Internal dashboards, intranet apps</td></tr>
+            </table>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- 3. WHAT YOU NEED                                       -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="section fade-in" id="setup">
+    <h2><span class="num">3</span> What You Need</h2>
+    <p class="subtitle">Three layers — Power BI, Azure, and your web application.</p>
+
+    <div class="card-grid cols-3">
+        <div class="card" style="border-top: 3px solid var(--amber);">
+            <span class="badge badge-amber">Power BI</span>
+            <h3 class="mt">BI Side (what you know)</h3>
+            <ul>
+                <li>A Power BI workspace</li>
+                <li>Published reports &amp; datasets</li>
+                <li>RLS roles (optional)</li>
+            </ul>
+        </div>
+        <div class="card" style="border-top: 3px solid var(--blue);">
+            <span class="badge badge-blue">Azure</span>
+            <h3 class="mt">Azure Side (one-time setup)</h3>
+            <ul>
+                <li>Entra ID app registration → Client ID + Secret</li>
+                <li>Service principal added to workspace</li>
+                <li>Admin enables SP API access</li>
+            </ul>
+        </div>
+        <div class="card" style="border-top: 3px solid var(--teal);">
+            <span class="badge badge-teal">App</span>
+            <h3 class="mt">Your Web App</h3>
+            <ul>
+                <li>Server: any language (Python, .NET, Node.js…)</li>
+                <li>Client: Power BI JS SDK</li>
+                <li>Config: Tenant ID, Client ID, Workspace ID, etc.</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- 4. STEP-BY-STEP FLOW                                   -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="section fade-in" id="flow">
+    <h2><span class="num">4</span> How It Works — Step by Step</h2>
+    <p class="subtitle">Follow the journey from report publishing to a user seeing the embedded report.</p>
+
+    <div class="flow-container">
+        <div class="flow-track" id="flow-track">
+            <div class="flow-step" data-delay="0">
+                <div class="circle" style="background: var(--amber);">1</div>
+                <div class="label">Build Report</div>
+                <div class="detail">Power BI Desktop</div>
+            </div>
+            <div class="flow-arrow" data-delay="100">➜</div>
+
+            <div class="flow-step" data-delay="200">
+                <div class="circle" style="background: var(--amber);">2</div>
+                <div class="label">Publish</div>
+                <div class="detail">To workspace</div>
+            </div>
+            <div class="flow-arrow" data-delay="300">➜</div>
+
+            <div class="flow-step" data-delay="400">
+                <div class="circle" style="background: var(--blue);">3</div>
+                <div class="label">Copy IDs</div>
+                <div class="detail">Workspace + Report</div>
+            </div>
+            <div class="flow-arrow" data-delay="500">➜</div>
+
+            <div class="flow-step" data-delay="600">
+                <div class="circle" style="background: var(--teal);">4</div>
+                <div class="label">User Visits App</div>
+                <div class="detail">Logs in</div>
+            </div>
+            <div class="flow-arrow" data-delay="700">➜</div>
+
+            <div class="flow-step" data-delay="800">
+                <div class="circle" style="background: var(--teal);">5</div>
+                <div class="label">App → Azure AD</div>
+                <div class="detail">Gets access token</div>
+            </div>
+            <div class="flow-arrow" data-delay="900">➜</div>
+
+            <div class="flow-step" data-delay="1000">
+                <div class="circle" style="background: var(--teal);">6</div>
+                <div class="label">GET Report</div>
+                <div class="detail">Embed URL + metadata</div>
+            </div>
+            <div class="flow-arrow" data-delay="1100">➜</div>
+
+            <div class="flow-step" data-delay="1200">
+                <div class="circle" style="background: var(--green);">7</div>
+                <div class="label">GenerateToken</div>
+                <div class="detail">Scoped + RLS</div>
+            </div>
+            <div class="flow-arrow" data-delay="1300">➜</div>
+
+            <div class="flow-step" data-delay="1400">
+                <div class="circle" style="background: var(--green);">8</div>
+                <div class="label">Embed in Browser</div>
+                <div class="detail">JS SDK renders</div>
+            </div>
+            <div class="flow-arrow" data-delay="1500">➜</div>
+
+            <div class="flow-step" data-delay="1600">
+                <div class="circle" style="background: var(--green);">9</div>
+                <div class="label">User Interacts</div>
+                <div class="detail">Slicers, filters, drill</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ID source callout -->
+    <div class="card mt" style="border-left: 4px solid var(--amber);">
+        <h3>📍 Where Do the IDs Come From?</h3>
+        <p style="font-size:.9rem; color:var(--muted); margin-top:.3rem;">
+            Open your report in the Power BI Service. The URL is:
+        </p>
+        <code style="display:block; background:var(--navy); color:#a5f3fc; padding:.75rem 1rem; border-radius:8px; margin-top:.5rem; font-size:.82rem; overflow-x:auto;">
+https://app.powerbi.com/groups/<strong style="color:var(--amber);">WORKSPACE-ID</strong>/reports/<strong style="color:var(--green);">REPORT-ID</strong>
+        </code>
+        <p style="font-size:.85rem; color:var(--muted); margin-top:.5rem;">
+            <strong>Tenant ID</strong> and <strong>Client ID</strong> come from the Azure AD app registration (set up by IT/admin).
+        </p>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- 5. THE APIs                                            -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="section fade-in" id="apis">
+    <h2><span class="num">5</span> The Power BI REST APIs</h2>
+    <p class="subtitle">Your app talks to Power BI through a set of REST APIs. Here are the key endpoints involved in embedding, what each one does, and how they chain together.</p>
+
+    <!-- Auth flow callout -->
+    <div class="card" style="border-left: 4px solid var(--blue); margin-bottom: 1.5rem;">
+        <h3>🔑 Authentication First</h3>
+        <p style="font-size:.9rem; color:var(--muted); margin-top:.3rem;">
+            Before calling any Power BI API, your server must get an <strong>Azure AD access token</strong> by authenticating with your Tenant ID, Client ID, and Client Secret via the Microsoft Identity platform (<code>https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token</code>). This access token is sent as a <code>Bearer</code> header on every subsequent API call.
+        </p>
+        <div class="token-jwt" style="margin-top:.75rem; font-size:.75rem;">
+POST https://login.microsoftonline.com/<span class="t-payload">{tenant-id}</span>/oauth2/v2.0/token
+
+grant_type    = client_credentials
+client_id     = <span class="t-payload">{client-id}</span>
+client_secret = <span class="t-sig">{client-secret}</span>
+scope         = https://analysis.windows.net/powerbi/api/.default
+
+→ Returns: { "<span class="t-header">access_token</span>": "eyJ0eX..." }
+        </div>
+    </div>
+
+    <!-- API endpoint cards -->
+    <div class="api-chain">
+        <div class="api-step-row">
+            <div class="api-num-col"><div class="api-num" style="background:var(--blue);">1</div><div class="api-connector"></div></div>
+            <div class="api-card">
+                <div class="api-card-header">
+                    <span class="badge badge-blue">GET</span>
+                    <span class="api-endpoint">List Reports in Workspace</span>
+                </div>
+                <div class="api-url">GET /v1.0/myorg/groups/{workspace-id}/reports</div>
+                <div class="api-desc">
+                    Returns all reports in a workspace — their <strong>IDs</strong>, <strong>names</strong>, <strong>embed URLs</strong>, and <strong>dataset IDs</strong>. This is how your app discovers which reports are available.
+                </div>
+                <div class="api-response">
+                    <div class="api-response-label">Response (simplified):</div>
+                    <div class="token-jwt" style="font-size:.72rem;">
+{
+  "value": [
+    {
+      "id": "<span class="t-payload">report-guid-1</span>",
+      "name": "Provider Performance",
+      "embedUrl": "<span class="t-header">https://app.powerbi.com/reportEmbed?reportId=...</span>",
+      "datasetId": "<span class="t-payload">dataset-guid-1</span>"
+    }
+  ]
+}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="api-step-row">
+            <div class="api-num-col"><div class="api-num" style="background:var(--blue);">2</div><div class="api-connector"></div></div>
+            <div class="api-card">
+                <div class="api-card-header">
+                    <span class="badge badge-blue">GET</span>
+                    <span class="api-endpoint">Get Report</span>
+                </div>
+                <div class="api-url">GET /v1.0/myorg/groups/{workspace-id}/reports/{report-id}</div>
+                <div class="api-desc">
+                    Fetches metadata for a <strong>single report</strong>. Returns the same fields as above but for one specific report. Your app uses this when it already knows which report to embed.
+                </div>
+            </div>
+        </div>
+
+        <div class="api-step-row">
+            <div class="api-num-col"><div class="api-num" style="background:var(--green);">3</div><div class="api-connector"></div></div>
+            <div class="api-card">
+                <div class="api-card-header">
+                    <span class="badge badge-green">POST</span>
+                    <span class="api-endpoint">Generate Embed Token</span>
+                </div>
+                <div class="api-url">POST /v1.0/myorg/GenerateToken</div>
+                <div class="api-desc">
+                    The most important call. Creates a short-lived embed token scoped to specific reports, datasets, and (optionally) an RLS identity. The browser uses this token to render the report.
+                </div>
+                <div class="api-response">
+                    <div class="api-response-label">Request body:</div>
+                    <div class="token-jwt" style="font-size:.72rem;">
+{
+  "datasets": [{ "id": "<span class="t-payload">dataset-guid</span>" }],
+  "reports":  [{ "id": "<span class="t-payload">report-guid</span>" }],
+  "identities": [{                          <span class="t-sig">← optional, for RLS</span>
+    "username": "alice@contoso.co.uk",
+    "roles": ["DynamicRLS"],
+    "datasets": ["<span class="t-payload">dataset-guid</span>"]
+  }]
+}
+                    </div>
+                    <div class="api-response-label" style="margin-top:.75rem;">Response:</div>
+                    <div class="token-jwt" style="font-size:.72rem;">
+{
+  "<span class="t-header">token</span>": "eyJ0eXAiOiJKV1Qi...",
+  "<span class="t-header">tokenId</span>": "guid",
+  "<span class="t-header">expiration</span>": "2026-03-06T15:00:00Z"
+}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="api-step-row">
+            <div class="api-num-col"><div class="api-num" style="background:var(--teal);">4</div></div>
+            <div class="api-card">
+                <div class="api-card-header">
+                    <span class="badge badge-teal">JS SDK</span>
+                    <span class="api-endpoint">Embed in Browser</span>
+                </div>
+                <div class="api-url">powerbi.embed(element, config)</div>
+                <div class="api-desc">
+                    Not a REST call — this is client-side. Your server passes the <strong>embed URL</strong> (from step 1/2) and the <strong>embed token</strong> (from step 3) to the browser. The Power BI JS SDK takes over and renders the report in an iframe.
+                </div>
+                <div class="api-response">
+                    <div class="api-response-label">JavaScript:</div>
+                    <div class="token-jwt" style="font-size:.72rem;">
+const config = {
+  type: "report",
+  id: "<span class="t-payload">report-guid</span>",
+  embedUrl: "<span class="t-header">https://app.powerbi.com/reportEmbed?...</span>",
+  accessToken: "<span class="t-sig">eyJ0eXAi...</span>",
+  tokenType: models.TokenType.Embed,
+  settings: { panes: { filters: { visible: false } } }
+};
+
+powerbi.embed(reportContainer, config);
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Other useful endpoints -->
+    <h3 style="margin-top:2rem; margin-bottom:1rem;">Other Useful Endpoints</h3>
+    <div class="card-grid cols-2">
+        <div class="card">
+            <div class="api-card-header" style="margin-bottom:.5rem;">
+                <span class="badge badge-blue">GET</span>
+                <span style="font-weight:600; font-size:.9rem;">List Workspaces</span>
+            </div>
+            <div class="api-url" style="margin-bottom:.35rem;">GET /v1.0/myorg/groups</div>
+            <p>Lists all workspaces the service principal has access to. Useful for multi-tenant setups where each client has their own workspace.</p>
+        </div>
+        <div class="card">
+            <div class="api-card-header" style="margin-bottom:.5rem;">
+                <span class="badge badge-blue">GET</span>
+                <span style="font-weight:600; font-size:.9rem;">Get Dataset</span>
+            </div>
+            <div class="api-url" style="margin-bottom:.35rem;">GET /v1.0/myorg/groups/{workspace-id}/datasets/{dataset-id}</div>
+            <p>Returns dataset metadata including whether RLS is configured. Helps your app decide whether to include <code>identities</code> in the token request.</p>
+        </div>
+        <div class="card">
+            <div class="api-card-header" style="margin-bottom:.5rem;">
+                <span class="badge badge-green">POST</span>
+                <span style="font-weight:600; font-size:.9rem;">Refresh Dataset</span>
+            </div>
+            <div class="api-url" style="margin-bottom:.35rem;">POST /v1.0/myorg/groups/{workspace-id}/datasets/{dataset-id}/refreshes</div>
+            <p>Triggers a data refresh. You can automate this to keep embedded reports up to date without logging in to the Power BI Service.</p>
+        </div>
+        <div class="card">
+            <div class="api-card-header" style="margin-bottom:.5rem;">
+                <span class="badge badge-blue">GET</span>
+                <span style="font-weight:600; font-size:.9rem;">Get Pages</span>
+            </div>
+            <div class="api-url" style="margin-bottom:.35rem;">GET /v1.0/myorg/groups/{workspace-id}/reports/{report-id}/pages</div>
+            <p>Lists all pages in a report. Useful if your app needs to show a page picker or navigate programmatically to a specific page.</p>
+        </div>
+    </div>
+
+    <!-- Base URL callout -->
+    <div class="card mt" style="border-left: 4px solid var(--amber);">
+        <h3>📡 Base URL &amp; Versioning</h3>
+        <p style="font-size:.88rem; color:var(--muted); margin-top:.3rem;">
+            All Power BI REST API calls go to: <code style="background:var(--navy); color:#a5f3fc; padding:.15rem .45rem; border-radius:4px;">https://api.powerbi.com/v1.0/myorg/</code><br>
+            The <code>v1.0</code> version is stable and used in production. Microsoft publishes updates via the <a href="https://learn.microsoft.com/en-us/rest/api/power-bi/" style="color:var(--blue);">REST API reference docs</a>.
+        </p>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- 6. RLS                                                 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="section fade-in" id="rls">
+    <h2><span class="num">6</span> Row-Level Security (RLS)</h2>
+    <p class="subtitle">Control which rows each user sees — same DAX roles as always, but your app assigns the identity instead of Azure AD.</p>
+
+    <div class="rls-demo">
+        <div class="rls-tabs">
+            <button class="rls-tab active" data-tab="static">Static RLS</button>
+            <button class="rls-tab" data-tab="dynamic">Dynamic RLS</button>
+            <button class="rls-tab" data-tab="admin">Admin / AllAccess</button>
+            <button class="rls-tab" data-tab="pitfalls">Common Pitfalls</button>
+        </div>
+
+        <!-- Static -->
+        <div class="rls-panel active" data-tab="static">
+            <div class="rls-visual">
+                <table class="rls-data-table">
+                    <thead><tr><th>Region</th><th>Provider</th><th>Revenue</th></tr></thead>
+                    <tbody>
+                        <tr class="highlight"><td>East</td><td>Alpha Care</td><td>£42,000</td></tr>
+                        <tr class="highlight"><td>East</td><td>Beta Health</td><td>£38,500</td></tr>
+                        <tr class="dimmed"><td>West</td><td>Gamma Med</td><td>£51,200</td></tr>
+                        <tr class="dimmed"><td>West</td><td>Delta Labs</td><td>£29,800</td></tr>
+                        <tr class="dimmed"><td>North</td><td>Epsilon Care</td><td>£33,100</td></tr>
+                    </tbody>
+                </table>
+                <div class="rls-info-box">
+                    <h4>Static RLS</h4>
+                    <p>The DAX filter is hardcoded in the role definition. The <code style="display:inline; background:transparent; color:inherit; padding:0;">username</code> passed in the token is ignored.</p>
+                    <code>[Region] = "East"</code>
+                    <p style="margin-top:.75rem; font-size:.82rem; color: var(--muted);">
+                        <strong>Use when:</strong> you have a small, fixed number of data segments (regions, departments) and want a named role for each.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dynamic -->
+        <div class="rls-panel" data-tab="dynamic">
+            <div class="rls-visual">
+                <table class="rls-data-table">
+                    <thead><tr><th>UserUPN</th><th>ProviderID</th><th>Provider</th><th>Revenue</th></tr></thead>
+                    <tbody>
+                        <tr class="highlight"><td>alice@contoso.co.uk</td><td>P001</td><td>Alpha Care</td><td>£42,000</td></tr>
+                        <tr class="dimmed"><td>bob@contoso.co.uk</td><td>P002</td><td>Beta Health</td><td>£38,500</td></tr>
+                        <tr class="dimmed"><td>carol@contoso.co.uk</td><td>P003</td><td>Gamma Med</td><td>£51,200</td></tr>
+                    </tbody>
+                </table>
+                <div class="rls-info-box">
+                    <h4>Dynamic RLS</h4>
+                    <p>One role, many users. The <code style="display:inline; background:transparent; color:inherit; padding:0;">username</code> in the token replaces <code style="display:inline; background:transparent; color:inherit; padding:0;">USERPRINCIPALNAME()</code> at query time.</p>
+                    <code>[UserUPN] = USERPRINCIPALNAME()</code>
+                    <p style="margin-top:.75rem; font-size:.82rem; color: var(--muted);">
+                        <strong>Recommended.</strong> Define once — the identity value does the filtering. No new roles needed when you add users.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin -->
+        <div class="rls-panel" data-tab="admin">
+            <div class="rls-visual">
+                <table class="rls-data-table">
+                    <thead><tr><th>UserUPN</th><th>ProviderID</th><th>Provider</th><th>Revenue</th></tr></thead>
+                    <tbody>
+                        <tr class="highlight"><td>alice@contoso.co.uk</td><td>P001</td><td>Alpha Care</td><td>£42,000</td></tr>
+                        <tr class="highlight"><td>bob@contoso.co.uk</td><td>P002</td><td>Beta Health</td><td>£38,500</td></tr>
+                        <tr class="highlight"><td>carol@contoso.co.uk</td><td>P003</td><td>Gamma Med</td><td>£51,200</td></tr>
+                        <tr class="highlight"><td>dan@contoso.co.uk</td><td>P004</td><td>Delta Labs</td><td>£29,800</td></tr>
+                    </tbody>
+                </table>
+                <div class="rls-info-box">
+                    <h4>The Admin Problem</h4>
+                    <p>Once <em>any</em> RLS role exists on a dataset, <strong>every</strong> token request must include an EffectiveIdentity. There's no "skip RLS" option.</p>
+                    <p style="margin-top:.5rem; font-size:.82rem;"><strong>Solution:</strong> Create an <code style="display:inline; background:transparent; color:inherit; padding:0;">AllAccess</code> role with an empty DAX filter (no restriction). Pass it for admin users.</p>
+                    <code>Role: AllAccess
+DAX filter: (none)
+→ All rows visible</code>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pitfalls -->
+        <div class="rls-panel" data-tab="pitfalls">
+            <table class="comp-table" style="box-shadow:none;">
+                <thead>
+                    <tr><th style="width:30%;">Problem</th><th style="width:35%;">Cause</th><th>Fix</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="badge badge-red">400</span> "requires effective identity"</td>
+                        <td>Dataset has RLS roles but no identity was passed</td>
+                        <td>Always send <code>EffectiveIdentity</code> when RLS is defined</td>
+                    </tr>
+                    <tr>
+                        <td><span class="badge badge-red">400</span> "shouldn't have effective identity"</td>
+                        <td>Dataset has no RLS roles but you passed an identity</td>
+                        <td>Remove the <code>identities</code> field from the token request</td>
+                    </tr>
+                    <tr>
+                        <td>User sees <strong>no data</strong></td>
+                        <td><code>username</code> doesn't match any rows</td>
+                        <td>Check exact value — case-sensitive, must match data</td>
+                    </tr>
+                    <tr>
+                        <td>User sees <strong>all data</strong></td>
+                        <td>Role has no filter / broken relationships</td>
+                        <td>Verify relationship chain from security table to facts</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Effective Identity JSON callout -->
+    <div class="card mt" style="border-left: 4px solid var(--green);">
+        <h3>🔐 What your app sends to the API</h3>
+        <div class="token-jwt" style="margin-top:.75rem;">
+{
+  "datasets": [{ "id": "<span class="t-payload">&lt;dataset-id&gt;</span>" }],
+  "reports":  [{ "id": "<span class="t-payload">&lt;report-id&gt;</span>" }],
+  "identities": [{
+    "<span class="t-header">username</span>": "alice.smith@contoso.co.uk",
+    "<span class="t-header">roles</span>": ["DynamicRLS"],
+    "<span class="t-header">datasets</span>": ["<span class="t-payload">&lt;dataset-id&gt;</span>"]
+  }]
+}
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- 6. EMBED TOKENS                                        -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="section fade-in" id="tokens">
+    <h2><span class="num">7</span> How Embed Tokens Work</h2>
+    <p class="subtitle">A temporary, scoped key that grants a browser access to a specific Power BI report. The browser cannot escalate or modify it.</p>
+
+    <div class="token-visual">
+        <!-- LEFT: What's in a token -->
+        <div class="token-box">
+            <h4>🎫 What's Inside an Embed Token</h4>
+            <p style="font-size:.85rem; color:var(--muted); margin-bottom:1rem;">
+                When your server calls <code>POST /GenerateToken</code>, Power BI returns a JWT that encodes:
+            </p>
+            <div class="token-jwt">
+<span class="t-header">── HEADER ──────────────</span>
+  algorithm: RS256
+  type: JWT
+
+<span class="t-payload">── PAYLOAD ─────────────</span>
+  report_id:   abcd-1234…
+  dataset_id:  efgh-5678…
+  workspace_id: ijkl-9012…
+  rls_identity: alice@contoso…
+  rls_roles:   ["DynamicRLS"]
+  expires:     2026-03-06T15:00Z
+
+<span class="t-sig">── SIGNATURE ───────────</span>
+  signed by Power BI
+  (cannot be forged)
+            </div>
+        </div>
+
+        <!-- RIGHT: Lifecycle -->
+        <div class="token-box">
+            <h4>🔄 Token Lifecycle</h4>
+            <div class="lifecycle-steps">
+                <div class="lifecycle-step">
+                    <div class="step-text"><strong>Server authenticates</strong> with Azure AD using Client ID + Secret → receives an Azure AD access token</div>
+                </div>
+                <div class="lifecycle-step">
+                    <div class="step-text"><strong>Server calls</strong> <code>POST /GenerateToken</code> with the report, dataset, and optional RLS identity</div>
+                </div>
+                <div class="lifecycle-step">
+                    <div class="step-text"><strong>Power BI returns</strong> a scoped embed token (JWT) valid for ~1 hour</div>
+                </div>
+                <div class="lifecycle-step">
+                    <div class="step-text"><strong>Server sends</strong> embed token + embed URL to the browser</div>
+                </div>
+                <div class="lifecycle-step">
+                    <div class="step-text"><strong>JS SDK embeds</strong> the report in an iframe using the token</div>
+                </div>
+                <div class="lifecycle-step">
+                    <div class="step-text"><strong>Before expiry</strong>, fetch a new token and call <code>report.setAccessToken()</code> for seamless refresh</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security callout -->
+    <div class="card-grid cols-2 mt">
+        <div class="card" style="border-top:3px solid var(--green);">
+            <h3>✅ Security Guarantees</h3>
+            <ul>
+                <li>Token never contains your Client Secret</li>
+                <li>Token is signed by Power BI — cannot be forged</li>
+                <li>RLS identity is baked in at generation — browser can't change it</li>
+                <li>Scoped to specific report(s) and dataset(s)</li>
+            </ul>
+        </div>
+        <div class="card" style="border-top:3px solid var(--amber);">
+            <h3>⚠️ Key Properties</h3>
+            <ul>
+                <li><strong>Lifetime:</strong> ~1 hour default (must refresh)</li>
+                <li><strong>Scope:</strong> Token for Report A can't access Report B</li>
+                <li><strong>One use intent:</strong> Generate fresh per session/load</li>
+                <li><strong>Disposable:</strong> Short-lived, limited blast radius</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- 7. WORKLOAD ISOLATION                                  -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="section fade-in" id="isolation">
+    <h2><span class="num">8</span> Workload Isolation — Keeping Clients Separate</h2>
+    <p class="subtitle">When multiple clients use the same embedded app, you need to ensure data separation, performance isolation, and security.</p>
+
+    <div class="isolation-switcher">
+        <button class="iso-btn active" data-iso="rls">Shared + RLS</button>
+        <button class="iso-btn" data-iso="workspace">Separate Workspaces</button>
+        <button class="iso-btn" data-iso="capacity">Separate Capacities</button>
+    </div>
+
+    <!-- Shared + RLS -->
+    <div class="iso-scene active" data-iso="rls">
+        <div class="iso-diagram">
+            <div class="iso-box capacity">
+                <div class="box-label">Capacity</div>
+                <div class="box-title">F4 (shared)</div>
+                <div style="margin-top:1rem;">
+                    <div class="iso-box workspace" style="border-width:1px;">
+                        <div class="box-label">Workspace</div>
+                        <div class="box-title">Single workspace</div>
+                        <div class="iso-inner">
+                            <span class="iso-chip">📊 Report</span>
+                            <span class="iso-chip">🗄️ Dataset (all clients)</span>
+                        </div>
+                        <div style="margin-top:.5rem; font-size:.75rem; color:var(--muted);">RLS filters per client</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="iso-traits">
+            <div class="iso-trait"><span class="dot dot-green"></span> Data separation: Logical (DAX)</div>
+            <div class="iso-trait"><span class="dot dot-red"></span> Performance isolation: None</div>
+            <div class="iso-trait"><span class="dot dot-green"></span> Setup effort: Low</div>
+            <div class="iso-trait"><span class="dot dot-green"></span> Cost: Lowest</div>
+            <div class="iso-trait"><span class="dot dot-amber"></span> Risk: Misconfigured RLS = data leak</div>
+            <div class="iso-trait"><span class="dot dot-amber"></span> Scalability: Limited by dataset size</div>
+        </div>
+    </div>
+
+    <!-- Separate Workspaces -->
+    <div class="iso-scene" data-iso="workspace">
+        <div class="iso-diagram">
+            <div class="iso-box capacity">
+                <div class="box-label">Capacity</div>
+                <div class="box-title">F4 (shared)</div>
+                <div style="display:flex; gap:.75rem; margin-top:1rem; flex-wrap:wrap; justify-content:center;">
+                    <div class="iso-box workspace" style="border-width:1px; min-width:130px;">
+                        <div class="box-label">Client A</div>
+                        <div class="iso-inner"><span class="iso-chip">📊</span> <span class="iso-chip">🗄️</span></div>
+                    </div>
+                    <div class="iso-box workspace" style="border-width:1px; min-width:130px;">
+                        <div class="box-label">Client B</div>
+                        <div class="iso-inner"><span class="iso-chip">📊</span> <span class="iso-chip">🗄️</span></div>
+                    </div>
+                    <div class="iso-box workspace" style="border-width:1px; min-width:130px;">
+                        <div class="box-label">Client C</div>
+                        <div class="iso-inner"><span class="iso-chip">📊</span> <span class="iso-chip">🗄️</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="iso-traits">
+            <div class="iso-trait"><span class="dot dot-green"></span> Data separation: Physical (separate datasets)</div>
+            <div class="iso-trait"><span class="dot dot-amber"></span> Performance isolation: Partial</div>
+            <div class="iso-trait"><span class="dot dot-amber"></span> Setup effort: Medium</div>
+            <div class="iso-trait"><span class="dot dot-amber"></span> Cost: Medium</div>
+            <div class="iso-trait"><span class="dot dot-green"></span> Risk: Low — wrong workspace = no data</div>
+            <div class="iso-trait"><span class="dot dot-green"></span> Scalability: Good</div>
+        </div>
+    </div>
+
+    <!-- Separate Capacities -->
+    <div class="iso-scene" data-iso="capacity">
+        <div class="iso-diagram">
+            <div style="display:flex; gap:1.25rem; flex-wrap:wrap; justify-content:center;">
+                <div class="iso-box capacity">
+                    <div class="box-label">Capacity 1 — F4</div>
+                    <div style="display:flex; gap:.5rem; margin-top:.75rem; flex-wrap:wrap; justify-content:center;">
+                        <div class="iso-box workspace" style="border-width:1px; min-width:100px;">
+                            <div class="box-label">Client A</div>
+                            <div class="iso-inner"><span class="iso-chip">📊</span><span class="iso-chip">🗄️</span></div>
+                        </div>
+                        <div class="iso-box workspace" style="border-width:1px; min-width:100px;">
+                            <div class="box-label">Client B</div>
+                            <div class="iso-inner"><span class="iso-chip">📊</span><span class="iso-chip">🗄️</span></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="iso-box capacity">
+                    <div class="box-label">Capacity 2 — F8</div>
+                    <div style="display:flex; gap:.5rem; margin-top:.75rem; justify-content:center;">
+                        <div class="iso-box workspace" style="border-width:1px; min-width:100px;">
+                            <div class="box-label">Client C</div>
+                            <div class="iso-inner"><span class="iso-chip">📊</span><span class="iso-chip">🗄️</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="iso-traits">
+            <div class="iso-trait"><span class="dot dot-green"></span> Data separation: Physical</div>
+            <div class="iso-trait"><span class="dot dot-green"></span> Performance isolation: Full</div>
+            <div class="iso-trait"><span class="dot dot-red"></span> Setup effort: High</div>
+            <div class="iso-trait"><span class="dot dot-red"></span> Cost: Highest</div>
+            <div class="iso-trait"><span class="dot dot-green"></span> Risk: Lowest</div>
+            <div class="iso-trait"><span class="dot dot-green"></span> Scalability: Best</div>
+        </div>
+    </div>
+
+    <!-- Comparison table -->
+    <table class="comp-table" style="margin-top:2rem;">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Shared + RLS</th>
+                <th>Separate Workspaces</th>
+                <th>Separate Capacities</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Data isolation</strong></td><td>Logical (DAX)</td><td>Physical</td><td>Physical</td></tr>
+            <tr><td><strong>Performance</strong></td><td>❌ Shared</td><td>⚠️ Partial</td><td>✅ Full</td></tr>
+            <tr><td><strong>Cost</strong></td><td>✅ Lowest</td><td>⚠️ Medium</td><td>❌ Highest</td></tr>
+            <tr><td><strong>Customisation</strong></td><td>Limited</td><td>Full</td><td>Full</td></tr>
+            <tr><td><strong>Risk if misconfigured</strong></td><td>❌ Data leak</td><td>⚠️ Low</td><td>✅ Lowest</td></tr>
+            <tr><td><strong>Management</strong></td><td>✅ Low</td><td>⚠️ Medium</td><td>❌ High</td></tr>
+        </tbody>
+    </table>
+
+    <!-- SP Profiles note -->
+    <div class="card mt" style="border-left: 4px solid var(--teal);">
+        <h3>🧩 Service Principal Profiles (Advanced)</h3>
+        <p style="font-size:.88rem; color:var(--muted); margin-top:.3rem;">
+            For large-scale multi-tenancy (hundreds of clients), Microsoft recommends <strong>service principal profiles</strong> — virtual sub-identities of your service principal, each scoped to specific workspaces.
+        </p>
+        <ul style="font-size:.85rem; color:var(--muted); margin-top:.5rem;">
+            <li><strong>Tighter blast radius</strong> — a compromised profile only affects one client</li>
+            <li><strong>Higher API rate limits</strong> — limits are per-profile, not shared</li>
+            <li><strong>Easier auditing</strong> — API calls are tagged by profile</li>
+        </ul>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- 8. LICENSING                                           -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="section fade-in" id="licensing">
+    <h2><span class="num">9</span> Capacity &amp; Licensing</h2>
+    <p class="subtitle">To embed reports for external users (App Owns Data), you need dedicated capacity.</p>
+
+    <div class="lic-cards">
+        <div class="lic-card">
+            <h4>Power BI Embedded (A SKU)</h4>
+            <div class="lic-model">Pay-as-you-go · Azure resource</div>
+            <div class="lic-best">Best for: dev, testing, variable workloads</div>
+            <p style="font-size:.82rem; color:var(--muted); margin-top:.5rem;">Pause/resume on demand. Scale up/down via Azure Portal. Billed per hour.</p>
+        </div>
+        <div class="lic-card" style="border-color: var(--blue);">
+            <h4>Fabric Capacity (F SKU)</h4>
+            <div class="lic-model">Monthly commitment</div>
+            <div class="lic-best">Best for: production, steady workloads</div>
+            <p style="font-size:.82rem; color:var(--muted); margin-top:.5rem;">Full Fabric features (Lakehouse, Notebooks, etc.) plus embedding. Fixed monthly cost.</p>
+        </div>
+    </div>
+
+    <div class="card mt" style="border-left: 4px solid var(--amber);">
+        <h3>💡 Development Tip</h3>
+        <p style="font-size:.88rem; color:var(--muted); margin-top:.3rem;">
+            For <strong>development and testing</strong>, you can use a Pro licence with limited API calls — you don't need a paid capacity until you go to production.
+        </p>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- SUMMARY                                                -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<section class="section fade-in" id="summary">
+    <h2>📋 Quick Reference</h2>
+    <table class="comp-table">
+        <thead>
+            <tr><th>Concept</th><th>What It Means for You</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Publish reports</strong></td><td>Same as always — Desktop → Publish → Workspace</td></tr>
+            <tr><td><strong>App registration</strong></td><td>One-time Azure AD setup to give your app API access</td></tr>
+            <tr><td><strong>Embed token</strong></td><td>Short-lived JWT generated server-side, scoped to a single report</td></tr>
+            <tr><td><strong>JS SDK</strong></td><td>Renders the report in the browser — you don't build a viewer</td></tr>
+            <tr><td><strong>RLS</strong></td><td>Same DAX roles as always, but the app passes the identity</td></tr>
+            <tr><td><strong>No user licences</strong></td><td>End users don't need Pro/PPU — the capacity handles it</td></tr>
+            <tr><td><strong>Workload isolation</strong></td><td>Choose from shared RLS → separate workspaces → separate capacities</td></tr>
+        </tbody>
+    </table>
+</section>
+
+<!-- ───────── Footer ───────── -->
+<footer class="footer">
+    <p>Power BI Embedded — Interactive Overview · Built for BI professionals</p>
+    <p style="margin-top:.35rem;">
+        <a href="https://learn.microsoft.com/en-us/power-bi/developer/embedded/embed-sample-for-customers" target="_blank">Microsoft Docs</a>
+        &nbsp;·&nbsp;
+        <a href="https://learn.microsoft.com/en-us/rest/api/power-bi/" target="_blank">REST API</a>
+        &nbsp;·&nbsp;
+        <a href="https://learn.microsoft.com/en-us/power-bi/developer/embedded/embedded-row-level-security" target="_blank">RLS</a>
+        &nbsp;·&nbsp;
+        <a href="https://learn.microsoft.com/en-us/power-bi/developer/embedded/embed-multi-tenancy" target="_blank">Multi-tenancy</a>
+    </p>
+</footer>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- JavaScript                                             -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<script>
+(function () {
+    'use strict';
+
+    /* ── Scroll-triggered fade-ins ─────────────────────── */
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                e.target.classList.add('visible');
+                observer.unobserve(e.target);
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+    /* ── Flow step staggered animation ─────────────────── */
+    const flowObserver = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                const items = e.target.querySelectorAll('.flow-step, .flow-arrow');
+                items.forEach((item) => {
+                    const delay = parseInt(item.dataset.delay || '0', 10);
+                    setTimeout(() => item.classList.add('visible'), delay);
+                });
+                flowObserver.unobserve(e.target);
+            }
+        });
+    }, { threshold: 0.15 });
+
+    const flowTrack = document.getElementById('flow-track');
+    if (flowTrack) flowObserver.observe(flowTrack);
+
+    /* ── RLS tabs ──────────────────────────────────────── */
+    document.querySelectorAll('.rls-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            const target = tab.dataset.tab;
+            document.querySelectorAll('.rls-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === target));
+            document.querySelectorAll('.rls-panel').forEach(p => p.classList.toggle('active', p.dataset.tab === target));
+        });
+    });
+
+    /* ── Isolation approach switcher ───────────────────── */
+    document.querySelectorAll('.iso-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const target = btn.dataset.iso;
+            document.querySelectorAll('.iso-btn').forEach(b => b.classList.toggle('active', b.dataset.iso === target));
+            document.querySelectorAll('.iso-scene').forEach(s => s.classList.toggle('active', s.dataset.iso === target));
+        });
+    });
+
+    /* ── Pattern card toggle ───────────────────────────── */
+    document.querySelectorAll('.pattern-card').forEach(card => {
+        card.addEventListener('click', () => {
+            document.querySelectorAll('.pattern-card').forEach(c => c.classList.remove('active'));
+            card.classList.add('active');
+        });
+    });
+})();
+</script>
+</body>
+</html>
