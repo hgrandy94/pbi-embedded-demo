@@ -90,8 +90,8 @@ sequenceDiagram
 
 | API | Used where | Purpose |
 |---|---|---|
-| **Power BI REST API** | Python backend ([`aad_service.py`](app/services/aad_service.py), [`pbi_embed_service.py`](app/services/pbi_embed_service.py)) | Authenticate, fetch report metadata, generate embed tokens |
-| **Power BI JS SDK** | Browser ([`embedding.js`](app/static/js/embedding.js)) | Render the report in an iframe, optional programmatic control (filters, events, navigation) |
+| **Power BI REST API** | Python backend ([`aad_service.py`](src/app/services/aad_service.py), [`pbi_embed_service.py`](src/app/services/pbi_embed_service.py)) | Authenticate, fetch report metadata, generate embed tokens |
+| **Power BI JS SDK** | Browser ([`embedding.js`](src/app/static/js/embedding.js)) | Render the report in an iframe, optional programmatic control (filters, events, navigation) |
 
 ---
 
@@ -122,7 +122,7 @@ sequenceDiagram
 ```bash
 # 1. Clone the repository
 git clone https://github.com/hgrandy94/pbi-embedded-demo.git
-cd pbi-embedded-demo
+cd pbi-embedded-demo/src
 
 # 2. Install dependencies with uv
 uv sync
@@ -132,11 +132,10 @@ uv run python main.py \
   --tenant-id "YOUR_TENANT_ID" \
   --client-id "YOUR_CLIENT_ID" \
   --client-secret "YOUR_CLIENT_SECRET" \
-  --workspace-id "YOUR_WORKSPACE_ID" \
-  --report-id "YOUR_REPORT_ID"
+  --workspace-id "YOUR_WORKSPACE_ID"
 ```
 
-Open <http://localhost:5000> and log in with the demo credentials (default: `admin` / `admin`).
+Open <http://localhost:5000> and log in with any user from `demo_users.json` (e.g. `admin` / `admin`).
 
 > **Tip:** Run `uv run python main.py --help` to see every available option.
 
@@ -151,13 +150,12 @@ All configuration is passed via command-line arguments — nothing is stored in 
 | `--tenant-id` | Yes | – | Azure AD / Microsoft Entra tenant ID |
 | `--client-id` | Yes | – | Application (client) ID of the registered app |
 | `--client-secret` | No | `""` | Client secret (required for ServicePrincipal mode) |
-| `--workspace-id` | Yes | – | Power BI workspace ID containing the report |
-| `--report-id` | Yes | – | ID of the Power BI report to embed |
+| `--workspace-id` | Yes | – | Power BI workspace ID containing the reports |
+| `--report-id` | No | `""` | Optional default report ID (overrides per-user config) |
+| `--users-config` | No | `demo_users.json` | Path to JSON file defining users and their report/RLS access |
 | `--auth-mode` | No | `ServicePrincipal` | `ServicePrincipal` or `MasterUser` |
 | `--pbi-user` | No | `""` | Master user email (MasterUser mode only) |
 | `--pbi-pass` | No | `""` | Master user password (MasterUser mode only) |
-| `--demo-username` | No | `admin` | Web app login username |
-| `--demo-password` | No | `admin` | Web app login password |
 | `--secret-key` | No | *(random)* | Flask session signing key |
 | `--scope-base` | No | `https://analysis.windows.net/powerbi/api/.default` | OAuth scope |
 | `--authority-url` | No | `https://login.microsoftonline.com/organizations` | Entra authority |
@@ -170,38 +168,42 @@ All configuration is passed via command-line arguments — nothing is stored in 
 
 ```
 pbi-embedded-demo/
-├── main.py                            # Entry point — Click CLI
-├── pyproject.toml                     # Project metadata & dependencies
-├── app/
-│   ├── __init__.py                    # Flask app factory
-│   ├── config.py                      # Default configuration reference
-│   ├── auth.py                        # Login / logout routes (Flask-Login)
-│   ├── views.py                       # Home, Reports & /getembedinfo API
-│   ├── utils.py                       # Config validation
-│   ├── models/
-│   │   ├── embed_config.py            # EmbedConfig DTO
-│   │   ├── embed_token.py             # EmbedToken DTO
-│   │   ├── embed_token_request_body.py
-│   │   └── report_config.py           # ReportConfig DTO
-│   ├── services/
-│   │   ├── aad_service.py             # Azure AD token acquisition (MSAL)
-│   │   └── pbi_embed_service.py       # Power BI REST API calls
-│   ├── templates/
-│   │   ├── base.html                  # Base layout with navbar
-│   │   ├── login.html                 # Login page
-│   │   ├── home.html                  # Home / landing page
-│   │   └── reports.html               # Embedded report page
-│   └── static/
-│       ├── css/style.css              # Custom styles
-│       └── js/embedding.js            # Power BI JS SDK embedding logic
-└── README.md
+├── README.md                              # This file
+├── pbi_embedded_setup_considerations.md   # Design decisions & RLS guidance
+└── src/
+    ├── main.py                            # Entry point — Click CLI
+    ├── demo_users.json                    # Demo users, report access & RLS config
+    ├── pyproject.toml                     # Project metadata & dependencies
+    └── app/
+        ├── __init__.py                    # Flask app factory
+        ├── config.py                      # Default configuration reference
+        ├── auth.py                        # Multi-user login / logout (Flask-Login)
+        ├── views.py                       # Home, Reports, /api/reports & /getembedinfo
+        ├── utils.py                       # Config validation
+        ├── models/
+        │   ├── embed_config.py            # EmbedConfig DTO
+        │   ├── embed_token.py             # EmbedToken DTO
+        │   ├── embed_token_request_body.py # Includes RLS identities
+        │   └── report_config.py           # ReportConfig DTO
+        ├── services/
+        │   ├── aad_service.py             # Azure AD token acquisition (MSAL)
+        │   └── pbi_embed_service.py       # Power BI REST API calls + RLS
+        ├── templates/
+        │   ├── base.html                  # Layout: topbar + sidebar with report list
+        │   ├── login.html                 # Branded login page
+        │   ├── home.html                  # Home with stat cards
+        │   ├── reports.html               # Report picker + embedded viewer
+        │   └── about.html                 # About & Help page
+        └── static/
+            ├── css/style.css              # Contoso Health design system
+            └── js/embedding.js            # Multi-report embedding logic
 ```
 
 ---
 
 ## Key Code Walkthrough
 
-### 1. Token acquisition ([`aad_service.py`](app/services/aad_service.py))
+### 1. Token acquisition ([`aad_service.py`](src/app/services/aad_service.py))
 
 Uses MSAL to get an Azure AD access token via OAuth 2.0 client credentials:
 
@@ -212,7 +214,7 @@ client_app = msal.ConfidentialClientApplication(
 response = client_app.acquire_token_for_client(scopes=SCOPE_BASE)
 ```
 
-### 2. Embed token generation ([`pbi_embed_service.py`](app/services/pbi_embed_service.py))
+### 2. Embed token generation ([`pbi_embed_service.py`](src/app/services/pbi_embed_service.py))
 
 Two REST API calls:
 
@@ -225,7 +227,7 @@ requests.post("https://api.powerbi.com/v1.0/myorg/GenerateToken",
     data=json.dumps({"datasets": [...], "reports": [...], "targetWorkspaces": [...]}))
 ```
 
-### 3. Client-side embedding ([`embedding.js`](app/static/js/embedding.js))
+### 3. Client-side embedding ([`embedding.js`](src/app/static/js/embedding.js))
 
 The Power BI JS SDK renders the report inside a `<div>`:
 
