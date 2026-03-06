@@ -1,3 +1,5 @@
+# This repo is a work in progress!
+
 # Power BI Embedded Demo
 
 A Python Flask web application that demonstrates embedding Power BI reports using the **App Owns Data** (embed for your customers) pattern. End users interact with fully interactive Power BI reports inside your app — no Power BI license required for them.

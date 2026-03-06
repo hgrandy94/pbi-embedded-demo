@@ -43,6 +43,13 @@
       "role_label": "Optical Provider",
       "allowed_reports": "*",
       "rls": { "username": "eve.lee@contoso.co.uk", "roles": ["DynamicRLS"] }
+    },
+    "frank": {
+      "password": "frank",
+      "display_name": "Frank Green",
+      "role_label": "Optical Provider",
+      "allowed_reports": "*",
+      "rls": { "username": "frank.green@contoso.co.uk", "roles": ["DynamicRLS"] }
     }
   }
 }
