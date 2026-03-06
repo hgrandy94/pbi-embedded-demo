@@ -1,6 +1,8 @@
 # Power BI Embedded — Setup Guide for BI Professionals
 
-> This guide explains how Power BI Embedded works and what you need to set up. It's written for people who know Power BI but may be new to embedding reports in custom applications.
+> This guide explains how Power BI Embedded works and what you need to set up. It's written for people who know Power BI but may be new to embedding reports in custom applications. 
+
+For a more interactive view, go to: https://hgrandy94.github.io/pbi-embedded-demo/
 
 ---
 
