@@ -1,27 +1,48 @@
 {
   "_comment": "Demo user credentials and report access. For demonstration only — never use in production.",
-  "_rls_note": "The 'rls' field only works when the Power BI dataset has RLS roles defined in Power BI Desktop. Set 'rls' to an object with 'username' and 'roles' keys matching the DAX role names. Leave as null when the dataset has no RLS.",
+  "_rls_note": "The 'rls' field passes an EffectiveIdentity to the Power BI GenerateToken API. 'username' is matched against USERPRINCIPALNAME() in DAX. 'roles' must match role names in Power BI Desktop.",
   "users": {
     "admin": {
       "password": "admin",
-      "display_name": "Alice Administrator",
-      "role_label": "System Administrator",
+      "display_name": "Admin",
+      "role_label": "System Administrator — All Data",
       "allowed_reports": "*",
-      "rls": null
+      "rls": { "username": "admin", "roles": ["AllAccess"] }
     },
-    "uksales": {
-      "password": "uksales",
-      "display_name": "UK Brian",
-      "role_label": "UK Regional Analyst",
+    "alice": {
+      "password": "alice",
+      "display_name": "Alice Smith",
+      "role_label": "Health Provider",
       "allowed_reports": "*",
-      "rls": null
+      "rls": { "username": "alice.smith@contoso.co.uk", "roles": ["DynamicRLS"] }
     },
-    "viewer": {
-      "password": "viewer",
-      "display_name": "Carla Viewer",
-      "role_label": "Clinic Viewer",
+    "bob": {
+      "password": "bob",
+      "display_name": "Bob Jones",
+      "role_label": "Dental Provider",
       "allowed_reports": "*",
-      "rls": null
+      "rls": { "username": "bob.jones@contoso.co.uk", "roles": ["DynamicRLS"] }
+    },
+    "carol": {
+      "password": "carol",
+      "display_name": "Carol Adams",
+      "role_label": "Care Home Provider",
+      "allowed_reports": "*",
+      "rls": { "username": "carol.adams@contoso.co.uk", "roles": ["DynamicRLS"] }
+    },
+    "dan": {
+      "password": "dan",
+      "display_name": "Dan Brown",
+      "role_label": "Insurance Provider",
+      "allowed_reports": "*",
+      "rls": { "username": "dan.brown@contoso.co.uk", "roles": ["DynamicRLS"] }
+    },
+    "eve": {
+      "password": "eve",
+      "display_name": "Eve Lee",
+      "role_label": "Optical Provider",
+      "allowed_reports": "*",
+      "rls": { "username": "eve.lee@contoso.co.uk", "roles": ["DynamicRLS"] }
     }
   }
 }
