@@ -388,7 +388,6 @@ To embed reports for external users (App Owns Data), you need one of:
 |---|---|---|
 | **Power BI Embedded (A SKU)** | Pay-as-you-go Azure resource | Development, testing, variable workloads |
 | **Fabric Capacity (F SKU)** | Monthly commitment | Production, steady workloads |
-| **Power BI Premium (P SKU)** | Per-capacity | Organisations already on Premium |
 
 > **For development and testing**, you can use a Pro license with limited API calls. For production, you need dedicated capacity.
 
@@ -409,8 +408,23 @@ To embed reports for external users (App Owns Data), you need one of:
 
 ## Further Reading
 
+**Getting started:**
 - [Tutorial: Embed for your customers](https://learn.microsoft.com/en-us/power-bi/developer/embedded/embed-sample-for-customers)
+- [Power BI REST API reference](https://learn.microsoft.com/en-us/rest/api/power-bi/)
+
+**Row-Level Security:**
 - [Row-Level Security with Power BI Embedded](https://learn.microsoft.com/en-us/power-bi/developer/embedded/embedded-row-level-security)
 - [Embed a report with RLS](https://learn.microsoft.com/en-us/power-bi/developer/embedded/cloud-rls)
+- [Dynamic RLS with USERPRINCIPALNAME()](https://learn.microsoft.com/en-us/power-bi/enterprise/service-admin-rls)
+
+**Embed tokens:**
+- [GenerateToken API](https://learn.microsoft.com/en-us/rest/api/power-bi/embed-token/generate-token)
+- [Embed token considerations](https://learn.microsoft.com/en-us/power-bi/developer/embedded/generate-embed-token)
+
+**Multi-tenancy & isolation:**
+- [Multi-tenancy with Power BI Embedded](https://learn.microsoft.com/en-us/power-bi/developer/embedded/embed-multi-tenancy)
+- [Service principal profiles for multi-tenancy](https://learn.microsoft.com/en-us/power-bi/developer/embedded/embed-multi-tenancy)
+
+**Pricing & capacity:**
 - [Power BI Embedded pricing](https://azure.microsoft.com/en-us/pricing/details/power-bi-embedded/)
-- [Power BI REST API reference](https://learn.microsoft.com/en-us/rest/api/power-bi/)
+- [Fabric capacity settings](https://learn.microsoft.com/en-us/fabric/admin/service-admin-portal-capacity-settings)
