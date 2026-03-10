@@ -17,6 +17,68 @@ class PbiEmbedService:
 
     # ── List all reports in a workspace ─────────────────────────────────
 
+    def get_dataset_id_for_report(self, workspace_id: str, report_id: str) -> str:
+        """Look up the dataset ID backing a given report."""
+        url = (
+            f"https://api.powerbi.com/v1.0/myorg/groups/{workspace_id}"
+            f"/reports/{report_id}"
+        )
+        api_response = requests.get(url, headers=self._get_request_header())
+        if api_response.status_code != 200:
+            abort(
+                api_response.status_code,
+                description=(
+                    f"Error while looking up dataset for report\n"
+                    f"{api_response.reason}:\t{api_response.text}"
+                ),
+            )
+        return api_response.json()["datasetId"]
+
+    def execute_dax_query(
+        self,
+        workspace_id: str,
+        dataset_id: str,
+        dax_query: str,
+        rls_username: str | None = None,
+    ) -> dict:
+        """Execute a DAX query using the Power BI Execute Queries API.
+
+        Args:
+            workspace_id: Workspace containing the dataset.
+            dataset_id: Target dataset.
+            dax_query: The DAX query to execute (e.g. ``EVALUATE 'Table'``).
+            rls_username: Optional username for RLS impersonation.
+
+        Returns:
+            The raw JSON response from the API.
+        """
+        url = (
+            f"https://api.powerbi.com/v1.0/myorg/groups/{workspace_id}"
+            f"/datasets/{dataset_id}/executeQueries"
+        )
+        body: dict = {
+            "queries": [{"query": dax_query}],
+            "serializerSettings": {"includeNulls": True},
+        }
+        if rls_username:
+            body["impersonatedUserName"] = rls_username
+
+        api_response = requests.post(
+            url,
+            data=json.dumps(body),
+            headers=self._get_request_header(),
+        )
+        if api_response.status_code != 200:
+            abort(
+                api_response.status_code,
+                description=(
+                    f"Error executing DAX query\n"
+                    f"{api_response.reason}:\t{api_response.text}\n"
+                    f"RequestId:\t{api_response.headers.get('RequestId')}"
+                ),
+            )
+        return api_response.json()
+
     def list_reports_in_workspace(self, workspace_id: str) -> list[dict]:
         """Return a list of report metadata dicts from the workspace.
 
@@ -157,6 +219,21 @@ class PbiEmbedService:
             data=json.dumps(body),
             headers=self._get_request_header(),
         )
+
+        # If the dataset doesn't have RLS roles but we sent an identity,
+        # the API returns 400 "shouldn't have effective identity".
+        # Retry without the identity so mixed-RLS workspaces work seamlessly.
+        if (
+            api_response.status_code == 400
+            and "identities" in body
+            and "shouldn't have effective identity" in api_response.text.lower()
+        ):
+            del body["identities"]
+            api_response = requests.post(
+                embed_token_api,
+                data=json.dumps(body),
+                headers=self._get_request_header(),
+            )
 
         if api_response.status_code != 200:
             abort(

@@ -277,6 +277,46 @@ a:hover { color: var(--ch-navy); }
   border: none;
 }
 
+/* ── Export Data panel ────────────────────────────────────────────────── */
+.ch-export-panel {
+  border: 1px solid var(--ch-border);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: var(--ch-white);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.04);
+}
+
+.ch-export-toggle {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0.65rem 1rem;
+  background: var(--ch-bg);
+  border: none;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--ch-navy);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.ch-export-toggle:hover {
+  background: #e8ecf2;
+}
+
+.ch-export-chevron {
+  transition: transform 0.25s;
+}
+
+.ch-export-chevron.open {
+  transform: rotate(180deg);
+}
+
+.ch-export-body {
+  padding: 1rem 1rem 1.1rem;
+  border-top: 1px solid var(--ch-border);
+}
+
 /* ── Buttons ──────────────────────────────────────────────────────────── */
 .btn-ch-primary {
   background: var(--ch-teal);

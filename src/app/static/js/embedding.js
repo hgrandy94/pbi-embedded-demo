@@ -12,6 +12,22 @@ document.addEventListener("DOMContentLoaded", function () {
   var viewerTitle     = document.getElementById("report-viewer-title");
   var backBtn         = document.getElementById("back-to-picker");
 
+  // Export panel elements
+  var exportPanel       = document.getElementById("export-panel");
+  var exportToggle      = document.getElementById("export-toggle");
+  var exportBody        = document.getElementById("export-body");
+  var exportTableSelect = document.getElementById("export-table-select");
+  var exportRowLimit    = document.getElementById("export-row-limit");
+  var exportDownloadBtn = document.getElementById("export-download-btn");
+  var exportCustomToggle  = document.getElementById("export-custom-toggle");
+  var exportCustomDax     = document.getElementById("export-custom-dax");
+  var exportDaxInput      = document.getElementById("export-dax-input");
+  var exportCustomDownload = document.getElementById("export-custom-download");
+  var exportStatus        = document.getElementById("export-status");
+
+  // Track the current report ID for export
+  var currentReportId = "";
+
   if (!reportContainer) return;
 
   // ── Helpers ──────────────────────────────────────────────────────────────
@@ -38,12 +54,152 @@ document.addEventListener("DOMContentLoaded", function () {
     if (viewerTitle) viewerTitle.textContent = name || "Report";
   }
 
+  // ── Export panel helpers ─────────────────────────────────────────────────
+
+  function showExportPanel(reportId) {
+    currentReportId = reportId;
+    if (exportPanel) {
+      exportPanel.classList.remove("d-none");
+      loadDatasetTables(reportId);
+    }
+  }
+
+  function hideExportPanel() {
+    if (exportPanel) {
+      exportPanel.classList.add("d-none");
+      exportBody.classList.add("d-none");
+      exportToggle.querySelector(".ch-export-chevron").classList.remove("open");
+    }
+    currentReportId = "";
+  }
+
+  function setExportStatus(msg, isError) {
+    if (!exportStatus) return;
+    exportStatus.classList.remove("d-none");
+    exportStatus.className = "mt-2 " + (isError ? "text-danger" : "text-muted");
+    exportStatus.style.fontSize = ".82rem";
+    exportStatus.textContent = msg;
+  }
+
+  function clearExportStatus() {
+    if (exportStatus) {
+      exportStatus.classList.add("d-none");
+      exportStatus.textContent = "";
+    }
+  }
+
+  function loadDatasetTables(reportId) {
+    if (!exportTableSelect) return;
+    exportTableSelect.innerHTML = '<option value="">Loading tables…</option>';
+    if (exportDownloadBtn) exportDownloadBtn.disabled = true;
+
+    fetch("/api/dataset-tables?report_id=" + encodeURIComponent(reportId))
+      .then(function (r) {
+        if (!r.ok) return r.json().then(function (e) { throw new Error(e.errorMsg || "Failed to fetch tables"); });
+        return r.json();
+      })
+      .then(function (data) {
+        var tables = data.tables || [];
+        exportTableSelect.innerHTML = "";
+        if (tables.length === 0) {
+          exportTableSelect.innerHTML = '<option value="">No tables found</option>';
+          return;
+        }
+        tables.forEach(function (t) {
+          var opt = document.createElement("option");
+          opt.value = t;
+          opt.textContent = t;
+          exportTableSelect.appendChild(opt);
+        });
+        if (exportDownloadBtn) exportDownloadBtn.disabled = false;
+      })
+      .catch(function (err) {
+        exportTableSelect.innerHTML = '<option value="">Error loading tables</option>';
+        setExportStatus(err.message, true);
+      });
+  }
+
+  function triggerExport(daxQuery) {
+    clearExportStatus();
+    setExportStatus("Exporting…", false);
+    if (exportDownloadBtn) exportDownloadBtn.disabled = true;
+
+    fetch("/api/export-data", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ report_id: currentReportId, dax_query: daxQuery }),
+    })
+      .then(function (r) {
+        // Check if the response is CSV or an error JSON
+        var ct = r.headers.get("content-type") || "";
+        if (ct.indexOf("text/csv") !== -1) {
+          return r.blob().then(function (blob) {
+            // Trigger file download
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement("a");
+            a.href = url;
+            a.download = "export.csv";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            setExportStatus("Download complete.", false);
+          });
+        } else {
+          return r.json().then(function (data) {
+            throw new Error(data.errorMsg || "Export failed.");
+          });
+        }
+      })
+      .catch(function (err) {
+        setExportStatus(err.message, true);
+      })
+      .finally(function () {
+        if (exportDownloadBtn) exportDownloadBtn.disabled = false;
+      });
+  }
+
+  // ── Export panel event listeners ────────────────────────────────────────
+
+  if (exportToggle) {
+    exportToggle.addEventListener("click", function () {
+      var isOpen = !exportBody.classList.contains("d-none");
+      exportBody.classList.toggle("d-none", isOpen);
+      exportToggle.querySelector(".ch-export-chevron").classList.toggle("open", !isOpen);
+    });
+  }
+
+  if (exportDownloadBtn) {
+    exportDownloadBtn.addEventListener("click", function () {
+      var table = exportTableSelect ? exportTableSelect.value : "";
+      var limit = exportRowLimit ? parseInt(exportRowLimit.value, 10) || 1000 : 1000;
+      if (!table) { setExportStatus("Please select a table.", true); return; }
+      var dax = "EVALUATE TOPN(" + limit + ", '" + table + "')";
+      triggerExport(dax);
+    });
+  }
+
+  if (exportCustomToggle) {
+    exportCustomToggle.addEventListener("click", function () {
+      exportCustomDax.classList.toggle("d-none");
+    });
+  }
+
+  if (exportCustomDownload) {
+    exportCustomDownload.addEventListener("click", function () {
+      var dax = exportDaxInput ? exportDaxInput.value.trim() : "";
+      if (!dax) { setExportStatus("Enter a DAX query.", true); return; }
+      triggerExport(dax);
+    });
+  }
+
   // Back button returns to picker
   if (backBtn) {
     backBtn.addEventListener("click", function () {
       // Reset the embed container
       if (window.powerbi) window.powerbi.reset(reportContainer);
       if (loadingSpinner) loadingSpinner.classList.remove("d-none");
+      hideExportPanel();
       // Remove report_id from the URL without reload
       history.pushState(null, "", "/reports");
       showPicker();
@@ -162,6 +318,7 @@ document.addEventListener("DOMContentLoaded", function () {
         report.on("loaded", function () {
           console.log("Report loaded successfully.");
           if (loadingSpinner) loadingSpinner.classList.add("d-none");
+          showExportPanel(reportId);
         });
 
         report.on("rendered", function () {
