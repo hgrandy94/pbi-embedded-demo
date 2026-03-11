@@ -484,7 +484,7 @@
             <span class="icon">🏢</span>
             <h3>App Owns Data</h3>
             <span class="badge badge-green">Recommended for customers</span>
-            <p class="desc">Your application authenticates with a service principal. End users have no Azure AD / Power BI interaction.</p>
+            <p class="desc">Your application authenticates with a service principal. End users have no Entra ID / Power BI interaction.</p>
             <table>
                 <tr><td>Who logs in?</td><td>Your app (service principal)</td></tr>
                 <tr><td>User licence?</td><td>Not needed</td></tr>
@@ -495,9 +495,9 @@
             <span class="icon">👤</span>
             <h3>User Owns Data</h3>
             <span class="badge badge-blue">For internal teams</span>
-            <p class="desc">Each user logs in to Azure AD themselves. They need their own Pro or PPU licence.</p>
+            <p class="desc">Each user logs in to Entra ID themselves. They need their own Pro or PPU licence.</p>
             <table>
-                <tr><td>Who logs in?</td><td>Each user via Azure AD</td></tr>
+                <tr><td>Who logs in?</td><td>Each user via Entra ID</td></tr>
                 <tr><td>User licence?</td><td>Pro or PPU required</td></tr>
                 <tr><td>Best for</td><td>Internal dashboards, intranet apps</td></tr>
             </table>
@@ -586,7 +586,7 @@
 
             <div class="flow-step" data-delay="800">
                 <div class="circle" style="background: var(--teal);">5</div>
-                <div class="label">App → Azure AD</div>
+                <div class="label">App → Entra ID</div>
                 <div class="detail">Gets access token</div>
             </div>
             <div class="flow-arrow" data-delay="900">➜</div>
@@ -630,7 +630,7 @@
 https://app.powerbi.com/groups/<strong style="color:var(--amber);">WORKSPACE-ID</strong>/reports/<strong style="color:var(--green);">REPORT-ID</strong>
         </code>
         <p style="font-size:.85rem; color:var(--muted); margin-top:.5rem;">
-            <strong>Tenant ID</strong> and <strong>Client ID</strong> come from the Azure AD app registration (set up by IT/admin).
+            <strong>Tenant ID</strong> and <strong>Client ID</strong> come from the Entra ID app registration (set up by IT/admin).
         </p>
     </div>
 </section>
@@ -648,7 +648,7 @@ https://app.powerbi.com/groups/<strong style="color:var(--amber);">WORKSPACE-ID<
     <div class="card" style="border-left: 4px solid var(--blue); margin-bottom: 1.5rem;">
         <h3>🔑 Authentication First</h3>
         <p style="font-size:.9rem; color:var(--muted); margin-top:.3rem;">
-            Before calling any Power BI API, your server must get an <strong>Azure AD access token</strong> by authenticating with your Tenant ID, Client ID, and Client Secret via the Microsoft Identity platform (<code>https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token</code>). This access token is sent as a <code>Bearer</code> header on every subsequent API call.
+            Before calling any Power BI API, your server must get an <strong>Entra ID access token</strong> by authenticating with your Tenant ID, Client ID, and Client Secret via the Microsoft Identity platform (<code>https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token</code>). This access token is sent as a <code>Bearer</code> header on every subsequent API call.
         </p>
         <div class="token-jwt" style="margin-top:.75rem; font-size:.75rem;">
 POST https://login.microsoftonline.com/<span class="t-payload">{tenant-id}</span>/oauth2/v2.0/token
@@ -827,7 +827,7 @@ powerbi.embed(reportContainer, config);
 <!-- ═══════════════════════════════════════════════════════ -->
 <section class="section fade-in" id="rls">
     <h2><span class="num">6</span> Row-Level Security (RLS)</h2>
-    <p class="subtitle">Control which rows each user sees — same DAX roles as always, but your app assigns the identity instead of Azure AD.</p>
+    <p class="subtitle">Control which rows each user sees — same DAX roles as always, but your app assigns the identity instead of Entra ID.</p>
 
     <div class="rls-demo">
         <div class="rls-tabs">
@@ -995,7 +995,7 @@ DAX filter: (none)
             <h4>🔄 Token Lifecycle</h4>
             <div class="lifecycle-steps">
                 <div class="lifecycle-step">
-                    <div class="step-text"><strong>Server authenticates</strong> with Azure AD using Client ID + Secret → receives an Azure AD access token</div>
+                    <div class="step-text"><strong>Server authenticates</strong> with Entra ID using Client ID + Secret → receives an Entra ID access token</div>
                 </div>
                 <div class="lifecycle-step">
                     <div class="step-text"><strong>Server calls</strong> <code>POST /GenerateToken</code> with the report, dataset, and optional RLS identity</div>
@@ -1173,20 +1173,6 @@ DAX filter: (none)
         </tbody>
     </table>
 
-    <!-- SP Profiles note -->
-    <div class="card mt" style="border-left: 4px solid var(--teal);">
-        <h3>🧩 Service Principal Profiles (Advanced)</h3>
-        <p style="font-size:.88rem; color:var(--muted); margin-top:.3rem;">
-            For large-scale multi-tenancy (hundreds of clients), Microsoft recommends <strong>service principal profiles</strong> — virtual sub-identities of your service principal, each scoped to specific workspaces.
-        </p>
-        <ul style="font-size:.85rem; color:var(--muted); margin-top:.5rem;">
-            <li><strong>Tighter blast radius</strong> — a compromised profile only affects one client</li>
-            <li><strong>Higher API rate limits</strong> — limits are per-profile, not shared</li>
-            <li><strong>Easier auditing</strong> — API calls are tagged by profile</li>
-        </ul>
-    </div>
-</section>
-
 <hr class="divider">
 
 <!-- ═══════════════════════════════════════════════════════ -->
@@ -1232,7 +1218,7 @@ DAX filter: (none)
         </thead>
         <tbody>
             <tr><td><strong>Publish reports</strong></td><td>Same as always — Desktop → Publish → Workspace</td></tr>
-            <tr><td><strong>App registration</strong></td><td>One-time Azure AD setup to give your app API access</td></tr>
+            <tr><td><strong>App registration</strong></td><td>One-time Entra ID setup to give your app API access</td></tr>
             <tr><td><strong>Embed token</strong></td><td>Short-lived JWT generated server-side, scoped to a single report</td></tr>
             <tr><td><strong>JS SDK</strong></td><td>Renders the report in the browser — you don't build a viewer</td></tr>
             <tr><td><strong>RLS</strong></td><td>Same DAX roles as always, but the app passes the identity</td></tr>

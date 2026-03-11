@@ -19,11 +19,7 @@ document.addEventListener("DOMContentLoaded", function () {
   var exportTableSelect = document.getElementById("export-table-select");
   var exportRowLimit    = document.getElementById("export-row-limit");
   var exportDownloadBtn = document.getElementById("export-download-btn");
-  var exportCustomToggle  = document.getElementById("export-custom-toggle");
-  var exportCustomDax     = document.getElementById("export-custom-dax");
-  var exportDaxInput      = document.getElementById("export-dax-input");
-  var exportCustomDownload = document.getElementById("export-custom-download");
-  var exportStatus        = document.getElementById("export-status");
+  var exportStatus      = document.getElementById("export-status");
 
   // Track the current report ID for export
   var currentReportId = "";
@@ -90,6 +86,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function loadDatasetTables(reportId) {
     if (!exportTableSelect) return;
+    var exportControls = document.getElementById("export-controls");
+    var exportUnavailable = document.getElementById("export-unavailable");
+    // Reset state
+    if (exportControls) exportControls.classList.remove("d-none");
+    if (exportUnavailable) exportUnavailable.classList.add("d-none");
     exportTableSelect.innerHTML = '<option value="">Loading tables…</option>';
     if (exportDownloadBtn) exportDownloadBtn.disabled = true;
 
@@ -102,7 +103,9 @@ document.addEventListener("DOMContentLoaded", function () {
         var tables = data.tables || [];
         exportTableSelect.innerHTML = "";
         if (tables.length === 0) {
-          exportTableSelect.innerHTML = '<option value="">No tables found</option>';
+          // No tables — show unavailable message, hide controls
+          if (exportControls) exportControls.classList.add("d-none");
+          if (exportUnavailable) exportUnavailable.classList.remove("d-none");
           return;
         }
         tables.forEach(function (t) {
@@ -114,8 +117,9 @@ document.addEventListener("DOMContentLoaded", function () {
         if (exportDownloadBtn) exportDownloadBtn.disabled = false;
       })
       .catch(function (err) {
-        exportTableSelect.innerHTML = '<option value="">Error loading tables</option>';
-        setExportStatus(err.message, true);
+        // Network or server error — show unavailable
+        if (exportControls) exportControls.classList.add("d-none");
+        if (exportUnavailable) exportUnavailable.classList.remove("d-none");
       });
   }
 
@@ -175,20 +179,6 @@ document.addEventListener("DOMContentLoaded", function () {
       var limit = exportRowLimit ? parseInt(exportRowLimit.value, 10) || 1000 : 1000;
       if (!table) { setExportStatus("Please select a table.", true); return; }
       var dax = "EVALUATE TOPN(" + limit + ", '" + table + "')";
-      triggerExport(dax);
-    });
-  }
-
-  if (exportCustomToggle) {
-    exportCustomToggle.addEventListener("click", function () {
-      exportCustomDax.classList.toggle("d-none");
-    });
-  }
-
-  if (exportCustomDownload) {
-    exportCustomDownload.addEventListener("click", function () {
-      var dax = exportDaxInput ? exportDaxInput.value.trim() : "";
-      if (!dax) { setExportStatus("Enter a DAX query.", true); return; }
       triggerExport(dax);
     });
   }

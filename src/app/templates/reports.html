@@ -49,33 +49,30 @@
       <i class="bi bi-chevron-down ch-export-chevron ms-auto"></i>
     </button>
     <div id="export-body" class="ch-export-body d-none">
-      <div class="row g-3 align-items-end">
-        <div class="col-sm-5">
-          <label for="export-table-select" class="form-label fw-semibold" style="font-size:.85rem;">Table</label>
-          <select id="export-table-select" class="form-select form-select-sm">
-            <option value="">Loading tables&hellip;</option>
-          </select>
-        </div>
-        <div class="col-sm-3">
-          <label for="export-row-limit" class="form-label fw-semibold" style="font-size:.85rem;">Row limit</label>
-          <input id="export-row-limit" type="number" class="form-control form-control-sm" value="1000" min="1" max="100000">
-        </div>
-        <div class="col-sm-4 d-flex gap-2">
-          <button id="export-download-btn" class="btn btn-sm btn-ch-primary flex-fill" disabled>
-            <i class="bi bi-filetype-csv me-1"></i>Download CSV
-          </button>
-        </div>
+      <!-- Shown when export is not available for this dataset -->
+      <div id="export-unavailable" class="d-none text-center py-3" style="color:var(--ch-muted); font-size:.85rem;">
+        <i class="bi bi-lock me-1"></i>
+        <span>Data export is not available for this report. The service principal needs
+        <strong>Build</strong> permission on the underlying dataset.</span>
       </div>
-      <div class="mt-2">
-        <button id="export-custom-toggle" class="btn btn-link btn-sm p-0" style="font-size:.78rem; color:var(--ch-muted);">
-          <i class="bi bi-code-slash me-1"></i>Custom DAX query
-        </button>
-        <div id="export-custom-dax" class="d-none mt-2">
-          <textarea id="export-dax-input" class="form-control form-control-sm" rows="3"
-            placeholder="EVALUATE TOPN(1000, 'TableName')" style="font-family:'Cascadia Code','Fira Code',monospace; font-size:.8rem;"></textarea>
-          <button id="export-custom-download" class="btn btn-sm btn-ch-outline mt-2">
-            <i class="bi bi-play-fill me-1"></i>Run &amp; Download
-          </button>
+      <!-- Normal export controls -->
+      <div id="export-controls">
+        <div class="row g-3 align-items-end">
+          <div class="col-sm-5">
+            <label for="export-table-select" class="form-label fw-semibold" style="font-size:.85rem;">Table</label>
+            <select id="export-table-select" class="form-select form-select-sm">
+              <option value="">Loading tables&hellip;</option>
+            </select>
+          </div>
+          <div class="col-sm-3">
+            <label for="export-row-limit" class="form-label fw-semibold" style="font-size:.85rem;">Row limit</label>
+            <input id="export-row-limit" type="number" class="form-control form-control-sm" value="1000" min="1" max="100000">
+          </div>
+          <div class="col-sm-4 d-flex gap-2">
+            <button id="export-download-btn" class="btn btn-sm btn-ch-primary flex-fill" disabled>
+              <i class="bi bi-filetype-csv me-1"></i>Download CSV
+            </button>
+          </div>
         </div>
       </div>
       <div id="export-status" class="mt-2 d-none" style="font-size:.82rem;"></div>

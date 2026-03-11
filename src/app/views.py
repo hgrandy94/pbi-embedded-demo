@@ -3,6 +3,7 @@
 import csv
 import io
 import json
+import logging
 
 from flask import Blueprint, Response, render_template, request
 from flask_login import current_user, login_required
@@ -11,7 +12,80 @@ from app.services.pbi_embed_service import PbiEmbedService
 from app.utils import Utils
 from flask import current_app
 
+logger = logging.getLogger(__name__)
+
 views_bp = Blueprint("views", __name__)
+
+
+# ── Helpers: Table discovery strategies ──────────────────────────────────
+
+def _extract_rows(result: dict) -> list[dict]:
+    """Pull the list of row dicts from an Execute Queries response."""
+    return (
+        result.get("results", [{}])[0]
+        .get("tables", [{}])[0]
+        .get("rows", [])
+    )
+
+
+def _find_column(row: dict, suffix: str) -> object | None:
+    """Find a value whose key ends with *suffix* (case-insensitive).
+
+    Handles both ``[Name]`` and ``INFO.TABLES[Name]`` style keys.
+    """
+    suffix_lower = suffix.lower()
+    for key, value in row.items():
+        if key.lower().endswith(suffix_lower):
+            return value
+    return None
+
+
+def _discover_tables_info(
+    service, workspace_id: str, dataset_id: str,
+    rls_username: str | None = None,
+) -> list[str]:
+    """Try ``EVALUATE INFO.TABLES()`` and return non-hidden table names."""
+    try:
+        result = service.execute_dax_query(
+            workspace_id, dataset_id, "EVALUATE INFO.TABLES()",
+            rls_username=rls_username,
+        )
+        logger.warning("INFO.TABLES() raw response: %s", json.dumps(result, default=str)[:2000])
+        tables: list[str] = []
+        for row in _extract_rows(result):
+            name = _find_column(row, "[Name]")
+            is_hidden = _find_column(row, "[IsHidden]")
+            if name and not is_hidden:
+                tables.append(str(name))
+        logger.warning("INFO.TABLES() discovered tables: %s", tables)
+        return tables
+    except Exception as exc:
+        logger.warning("INFO.TABLES() failed: %s", exc)
+        return []
+
+
+def _discover_tables_columnstats(
+    service, workspace_id: str, dataset_id: str,
+    rls_username: str | None = None,
+) -> list[str]:
+    """Fallback: ``EVALUATE COLUMNSTATISTICS()`` → unique table names."""
+    try:
+        result = service.execute_dax_query(
+            workspace_id, dataset_id, "EVALUATE COLUMNSTATISTICS()",
+            rls_username=rls_username,
+        )
+        logger.warning("COLUMNSTATISTICS() raw response: %s", json.dumps(result, default=str)[:2000])
+        names: set[str] = set()
+        for row in _extract_rows(result):
+            tbl = _find_column(row, "[Table Name]")
+            is_hidden = _find_column(row, "[IsHidden]")
+            if tbl and not is_hidden:
+                names.add(str(tbl))
+        logger.warning("COLUMNSTATISTICS() discovered tables: %s", names)
+        return list(names)
+    except Exception as exc:
+        logger.warning("COLUMNSTATISTICS() failed: %s", exc)
+        return []
 
 
 @views_bp.route("/")
@@ -175,24 +249,23 @@ def dataset_tables():
         workspace_id = current_app.config["WORKSPACE_ID"]
         dataset_id = service.get_dataset_id_for_report(workspace_id, report_id)
 
-        rls_username = None
-        if user.rls:
-            rls_username = user.rls.get("username")
+        # ── Strategy 1: REST API (no DAX, no impersonation) ──────────
+        tables = service.get_tables_for_dataset(workspace_id, dataset_id)
 
-        dax = (
-            "EVALUATE SELECTCOLUMNS("
-            "FILTER(INFO.TABLES(), [IsHidden] = FALSE()), "
-            "\"Name\", [Name])"
-        )
-        result = service.execute_dax_query(
-            workspace_id, dataset_id, dax, rls_username=rls_username,
-        )
+        # ── Strategy 2: INFO.TABLES() via DAX ────────────────────────
+        if not tables:
+            rls_username = None
+            if user.rls:
+                rls_username = user.rls.get("username")
+            tables = _discover_tables_info(
+                service, workspace_id, dataset_id, rls_username=rls_username,
+            )
 
-        tables = []
-        for row in result.get("results", [{}])[0].get("tables", [{}])[0].get("rows", []):
-            name = row.get("[Name]", "")
-            if name:
-                tables.append(name)
+        # ── Strategy 3: COLUMNSTATISTICS() via DAX ───────────────────
+        if not tables:
+            tables = _discover_tables_columnstats(
+                service, workspace_id, dataset_id, rls_username=rls_username,
+            )
 
         return Response(
             json.dumps({"tables": sorted(tables), "datasetId": dataset_id}),
@@ -201,8 +274,8 @@ def dataset_tables():
         )
     except Exception as ex:
         return Response(
-            json.dumps({"errorMsg": str(ex)}),
-            status=500,
+            json.dumps({"tables": [], "datasetId": "", "warning": str(ex)}),
+            status=200,
             mimetype="application/json",
         )
 

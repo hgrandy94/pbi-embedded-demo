@@ -63,7 +63,7 @@ def main(
 
     # Load the demo-users JSON file
     users_path = pathlib.Path(users_config)
-    with users_path.open() as f:
+    with users_path.open(encoding="utf-8") as f:
         users_data = json.load(f)
 
     config = {

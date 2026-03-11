@@ -1,6 +1,7 @@
 """Power BI embed service – generates embed tokens and configuration."""
 
 import json
+import logging
 
 import requests
 from flask import abort, current_app as app
@@ -8,6 +9,8 @@ from flask import abort, current_app as app
 from app.models.embed_config import EmbedConfig
 from app.models.embed_token import EmbedToken
 from app.models.embed_token_request_body import EmbedTokenRequestBody
+
+logger = logging.getLogger(__name__)
 from app.models.report_config import ReportConfig
 from app.services.aad_service import AadService
 
@@ -33,6 +36,33 @@ class PbiEmbedService:
                 ),
             )
         return api_response.json()["datasetId"]
+
+    def get_tables_for_dataset(
+        self, workspace_id: str, dataset_id: str,
+    ) -> list[str]:
+        """Return table names via the REST API (no DAX / no impersonation).
+
+        Uses ``GET /groups/{wid}/datasets/{did}/tables`` which only
+        requires workspace-level permissions.
+        """
+        url = (
+            f"https://api.powerbi.com/v1.0/myorg/groups/{workspace_id}"
+            f"/datasets/{dataset_id}/tables"
+        )
+        api_response = requests.get(url, headers=self._get_request_header())
+        logger.debug(
+            "GET dataset tables status=%s resp=%s",
+            api_response.status_code,
+            api_response.text[:1000],
+        )
+        if api_response.status_code != 200:
+            return []
+        tables = []
+        for tbl in api_response.json().get("value", []):
+            name = tbl.get("name", "")
+            if name:
+                tables.append(name)
+        return tables
 
     def execute_dax_query(
         self,
@@ -68,6 +98,31 @@ class PbiEmbedService:
             data=json.dumps(body),
             headers=self._get_request_header(),
         )
+        logger.debug(
+            "executeQueries [attempt 1] status=%s body=%s resp=%s",
+            api_response.status_code,
+            json.dumps(body)[:500],
+            api_response.text[:1000],
+        )
+
+        # If impersonation fails (dataset may not have RLS, or the
+        # impersonated user lacks Build permissions), retry without it.
+        if (
+            api_response.status_code in (400, 401)
+            and "impersonatedUserName" in body
+        ):
+            del body["impersonatedUserName"]
+            api_response = requests.post(
+                url,
+                data=json.dumps(body),
+                headers=self._get_request_header(),
+            )
+            logger.debug(
+                "executeQueries [attempt 2 - no impersonation] status=%s resp=%s",
+                api_response.status_code,
+                api_response.text[:1000],
+            )
+
         if api_response.status_code != 200:
             abort(
                 api_response.status_code,
